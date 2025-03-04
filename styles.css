@@ -1,0 +1,519 @@
+/* Base Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Inter", sans-serif;
+}
+
+body {
+  background-color: #f5f5f5;
+}
+
+.app-container {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Header Styles */
+.app-header {
+  height: 60px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-img {
+  height: 200px;
+  width: 200px;
+}
+
+.layoutImage {
+  height: 20px;
+  width: 20px;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-title {
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 1px;
+}
+
+.logo-subtitle {
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.logo-tagline {
+  font-size: 8px;
+  color: #666;
+  letter-spacing: 0.5px;
+}
+
+/* Update view controls to only show 2D */
+.view-controls {
+  display: flex;
+  margin-left: 40px;
+}
+
+.view-btn {
+  padding: 6px 16px;
+  background-color: #ff0000;
+  color: white;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  border-radius: 4px;
+}
+
+.price-info {
+  margin-left: auto;
+  text-align: right;
+}
+
+.price-exc-vat {
+  font-size: 14px;
+  color: #ff0000;
+  font-weight: 600;
+}
+
+.price-inc-vat,
+.price-per-unit {
+  font-size: 12px;
+  color: #333;
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  margin-left: 24px;
+  cursor: pointer;
+}
+
+.profile-img {
+  width: 45px;
+  height: 45px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.profile-name {
+  margin: 0 8px;
+  font-size: 14px;
+}
+
+.profile-arrow {
+  font-size: 10px;
+  color: #666;
+}
+
+/* Main Content */
+.main-content {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* Sidebar Styles */
+.sidebar {
+  width: 240px;
+  background-color: white;
+  border-right: 1px solid #e0e0e0;
+  overflow-y: auto;
+}
+
+.sidebar-item {
+  border-bottom: 1px solid #e0e0e0;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+}
+
+.sidebar-icon {
+  margin-right: 12px;
+  font-size: 25px;
+}
+
+.sidebar-title {
+  flex: 1;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.sidebar-arrow {
+  font-size: 10px;
+  color: #666;
+}
+
+.sidebar-content {
+  padding: 16px;
+  display: none;
+}
+
+.sidebar-item.active .sidebar-content {
+  display: block;
+}
+
+/* Add styles for layout shapes */
+.layout-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.layout-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.layout-option:hover {
+  background-color: #f0f0f0;
+}
+
+.layout-shape {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #333;
+  margin-bottom: 6px;
+  background-color: #eee;
+}
+
+.rectangle-shape {
+  width: 80px;
+  height: 60px;
+}
+
+.square-shape {
+  width: 60px;
+  height: 60px;
+}
+
+.l-shape {
+  position: relative;
+  width: 80px;
+  height: 60px;
+}
+
+.l-shape:after {
+  content: "";
+  position: absolute;
+  top: 30px;
+  left: 0;
+  width: 50px;
+  height: 30px;
+  background-color: #eee;
+  border-right: 2px solid #333;
+  border-bottom: 2px solid #333;
+}
+
+.u-shape {
+  position: relative;
+  width: 80px;
+  height: 60px;
+}
+
+.u-shape:before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 60px;
+  background-color: #eee;
+  border-right: 2px solid #333;
+}
+
+.u-shape:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 20px;
+  height: 60px;
+  background-color: #eee;
+  border-left: 2px solid #333;
+}
+
+.layout-label {
+  font-size: 12px;
+  color: #333;
+  margin-top: 4px;
+}
+
+/* Canvas Area */
+.canvas-area {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.canvas-container {
+  position: relative;
+  width: 800px;
+  height: 600px;
+}
+
+canvas {
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Resize Handles */
+.resize-handle {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-color: white;
+  border: 2px solid #ff0000;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: move;
+  z-index: 10;
+}
+
+/* Corner handles */
+.handle-tl {
+  cursor: nw-resize;
+}
+.handle-tr {
+  cursor: ne-resize;
+}
+.handle-br {
+  cursor: se-resize;
+}
+.handle-bl {
+  cursor: sw-resize;
+}
+
+/* Edge handles */
+.handle-tm {
+  cursor: n-resize;
+}
+.handle-mr {
+  cursor: e-resize;
+}
+.handle-bm {
+  cursor: s-resize;
+}
+.handle-ml {
+  cursor: w-resize;
+}
+
+/* Dimension Labels */
+.dimension-label {
+  position: absolute;
+  background-color: rgba(255, 255, 255, 0.7);
+  color: #333;
+  font-size: 14px;
+  font-weight: 500;
+  text-align: center;
+  padding: 2px 6px;
+  border-radius: 4px;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* Footer */
+.app-footer {
+  height: 60px;
+  background-color: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 16px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.back-btn {
+  padding: 8px 16px;
+  background-color: transparent;
+  border: none;
+  color: #333;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+.next-btn {
+  padding: 10px 24px;
+  background-color: #ff0000;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+}
+
+/* Control Panel (Hidden by default) */
+.control-panel {
+  position: fixed;
+  top: 70px;
+  right: 16px;
+  background-color: white;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+  padding: 16px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  z-index: 100;
+  display: none;
+}
+
+.control-group {
+  margin-bottom: 12px;
+}
+
+.control-group label {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 14px;
+  color: #333;
+}
+
+.control-group select,
+.control-group input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.control-group button {
+  padding: 6px 12px;
+  margin-right: 8px;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#dimensions {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Add styles for pattern options */
+.pattern-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.pattern-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.pattern-option:hover {
+  background-color: #f0f0f0;
+}
+
+.pattern-preview {
+  width: 60px;
+  height: 60px;
+  border: 1px solid #ccc;
+  margin-bottom: 6px;
+}
+
+.diagonal-lines {
+  background-image: repeating-linear-gradient(
+    45deg,
+    #222,
+    #222 2px,
+    #444 2px,
+    #444 10px
+  );
+}
+
+.checkerboard {
+  background-image: linear-gradient(45deg, #222 25%, transparent 25%),
+    linear-gradient(-45deg, #222 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #222 75%),
+    linear-gradient(-45deg, transparent 75%, #222 75%);
+  background-size: 20px 20px;
+  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+}
+
+.herringbone {
+  background-image: linear-gradient(45deg, #222 25%, transparent 25%),
+    linear-gradient(135deg, #222 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #222 75%),
+    linear-gradient(135deg, transparent 75%, #222 75%);
+  background-size: 25px 25px;
+  background-position: 0 0, 12.5px 0, 12.5px -12.5px, 0px 12.5px;
+}
+
+.basketweave {
+  background-image: linear-gradient(0deg, transparent 50%, #222 50%),
+    linear-gradient(90deg, transparent 50%, #222 50%);
+  background-size: 20px 20px;
+}
+
+.pattern-label {
+  font-size: 12px;
+  color: #333;
+  margin-top: 4px;
+}
+
+/* New styles for tile type and color dropdowns */
+.tile-type-select,
+.color-select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-top: 8px;
+  font-size: 14px;
+}
+
+.color-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.color-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.color-option input[type="color"] {
+  width: 60px;
+  height: 40px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
