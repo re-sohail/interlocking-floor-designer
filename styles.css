@@ -342,3 +342,20 @@ canvas {
 .resize-handles-hidden .resize-handle {
   display: none;
 }
+
+.side-handle {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  /* background-color: #e93f33;  */
+  border: 2px solid #e93f33;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 10;
+}
+
+.resize-handles-hidden .resize-handle,
+.resize-handles-hidden .side-handle {
+  display: none;
+}

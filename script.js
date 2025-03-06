@@ -1006,10 +1006,27 @@ function redrawCanvas() {
 }
 
 // Create and Update Resize Handles
+// function createHandles() {
+//   document
+//     .querySelectorAll(".resize-handle")
+//     .forEach((handle) => handle.remove());
+//   designShape.vertices.forEach((vertex, index) => {
+//     const handle = document.createElement("div");
+//     handle.className = "resize-handle";
+//     handle.setAttribute("data-index", index);
+//     handle.style.left = vertex.x + "px";
+//     handle.style.top = vertex.y + "px";
+//     canvasContainer.appendChild(handle);
+//   });
+// }
+
 function createHandles() {
+  // Remove existing handles
   document
-    .querySelectorAll(".resize-handle")
+    .querySelectorAll(".resize-handle, .side-handle")
     .forEach((handle) => handle.remove());
+
+  // Create vertex handles
   designShape.vertices.forEach((vertex, index) => {
     const handle = document.createElement("div");
     handle.className = "resize-handle";
@@ -1018,14 +1035,93 @@ function createHandles() {
     handle.style.top = vertex.y + "px";
     canvasContainer.appendChild(handle);
   });
+
+  // Calculate bounding box
+  const xs = designShape.vertices.map((v) => v.x);
+  const ys = designShape.vertices.map((v) => v.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  // Define side handle positions
+  const sidePositions = {
+    left: { x: minX, y: (minY + maxY) / 2 },
+    right: { x: maxX, y: (minY + maxY) / 2 },
+    top: { x: (minX + maxX) / 2, y: minY },
+    bottom: { x: (minX + maxX) / 2, y: maxY },
+  };
+
+  // Create side handles
+  for (const [side, pos] of Object.entries(sidePositions)) {
+    const handle = document.createElement("div");
+    handle.className = "side-handle";
+    handle.setAttribute("data-side", side);
+    handle.style.left = pos.x + "px";
+    handle.style.top = pos.y + "px";
+    canvasContainer.appendChild(handle);
+  }
 }
 
+// function updateHandles() {
+//   const handles = document.querySelectorAll(".resize-handle");
+//   handles.forEach((handle, index) => {
+//     handle.style.left = designShape.vertices[index].x + "px";
+//     handle.style.top = designShape.vertices[index].y + "px";
+//   });
+// }
+
 function updateHandles() {
-  const handles = document.querySelectorAll(".resize-handle");
-  handles.forEach((handle, index) => {
+  // Update vertex handles
+  document.querySelectorAll(".resize-handle").forEach((handle, index) => {
     handle.style.left = designShape.vertices[index].x + "px";
     handle.style.top = designShape.vertices[index].y + "px";
   });
+
+  // Update side handles
+  const xs = designShape.vertices.map((v) => v.x);
+  const ys = designShape.vertices.map((v) => v.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  const sidePositions = {
+    left: { x: minX, y: (minY + maxY) / 2 },
+    right: { x: maxX, y: (minY + maxY) / 2 },
+    top: { x: (minX + maxX) / 2, y: minY },
+    bottom: { x: (minX + maxX) / 2, y: maxY },
+  };
+
+  document.querySelectorAll(".side-handle").forEach((handle) => {
+    const side = handle.getAttribute("data-side");
+    const pos = sidePositions[side];
+    handle.style.left = pos.x + "px";
+    handle.style.top = pos.y + "px";
+  });
+}
+
+function getVerticesOnSide(side) {
+  const xs = designShape.vertices.map((v) => v.x);
+  const ys = designShape.vertices.map((v) => v.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+
+  const indices = [];
+  designShape.vertices.forEach((vertex, index) => {
+    if (side === "left" && vertex.x === minX) {
+      indices.push(index);
+    } else if (side === "right" && vertex.x === maxX) {
+      indices.push(index);
+    } else if (side === "top" && vertex.y === minY) {
+      indices.push(index);
+    } else if (side === "bottom" && vertex.y === maxY) {
+      indices.push(index);
+    }
+  });
+  return indices;
 }
 
 // Create SVG Pattern with Scaling (unchanged)
@@ -1296,12 +1392,63 @@ canvas.addEventListener("click", (e) => {
 });
 
 // Resize Functionality with Vertices
+// canvasContainer.addEventListener("mousedown", (e) => {
+//   if (
+//     e.target.classList.contains("resize-handle") &&
+//     activeSidebarSection === "layouts"
+//   ) {
+//     activeHandle = e.target.getAttribute("data-index");
+//     startMouseX = e.clientX;
+//     startMouseY = e.clientY;
+//     startShape = JSON.parse(JSON.stringify(designShape));
+//     e.stopPropagation();
+//     e.preventDefault();
+//   }
+// });
+
+// document.addEventListener("mousemove", (e) => {
+//   if (activeHandle === null) return;
+//   const dx = e.clientX - startMouseX;
+//   const dy = e.clientY - startMouseY;
+//   const index = parseInt(activeHandle);
+
+//   // Update only the dragged vertex
+//   designShape.vertices[index].x = Math.max(
+//     0,
+//     Math.min(canvas.width, startShape.vertices[index].x + dx)
+//   );
+//   designShape.vertices[index].y = Math.max(
+//     0,
+//     Math.min(canvas.height, startShape.vertices[index].y + dy)
+//   );
+
+//   redrawCanvas();
+//   updateHandles();
+//   updateDimensions();
+// });
+
+// document.addEventListener("mouseup", () => {
+//   activeHandle = null;
+// });
+
 canvasContainer.addEventListener("mousedown", (e) => {
   if (
     e.target.classList.contains("resize-handle") &&
     activeSidebarSection === "layouts"
   ) {
-    activeHandle = e.target.getAttribute("data-index");
+    activeHandle = parseInt(e.target.getAttribute("data-index"));
+    startMouseX = e.clientX;
+    startMouseY = e.clientY;
+    startShape = JSON.parse(JSON.stringify(designShape));
+    e.stopPropagation();
+    e.preventDefault();
+  } else if (
+    e.target.classList.contains("side-handle") &&
+    activeSidebarSection === "layouts"
+  ) {
+    const side = e.target.getAttribute("data-side");
+    const indices = getVerticesOnSide(side);
+    activeHandle = { side, indices };
     startMouseX = e.clientX;
     startMouseY = e.clientY;
     startShape = JSON.parse(JSON.stringify(designShape));
@@ -1312,19 +1459,42 @@ canvasContainer.addEventListener("mousedown", (e) => {
 
 document.addEventListener("mousemove", (e) => {
   if (activeHandle === null) return;
-  const dx = e.clientX - startMouseX;
-  const dy = e.clientY - startMouseY;
-  const index = parseInt(activeHandle);
 
-  // Update only the dragged vertex
-  designShape.vertices[index].x = Math.max(
-    0,
-    Math.min(canvas.width, startShape.vertices[index].x + dx)
-  );
-  designShape.vertices[index].y = Math.max(
-    0,
-    Math.min(canvas.height, startShape.vertices[index].y + dy)
-  );
+  if (typeof activeHandle === "number") {
+    // Dragging a vertex handle (existing reshaping)
+    const dx = e.clientX - startMouseX;
+    const dy = e.clientY - startMouseY;
+    const index = activeHandle;
+    designShape.vertices[index].x = Math.max(
+      0,
+      Math.min(canvas.width, startShape.vertices[index].x + dx)
+    );
+    designShape.vertices[index].y = Math.max(
+      0,
+      Math.min(canvas.height, startShape.vertices[index].y + dy)
+    );
+  } else if (activeHandle.side) {
+    // Dragging a side handle (new resizing)
+    const side = activeHandle.side;
+    const indices = activeHandle.indices;
+    if (side === "left" || side === "right") {
+      const dx = e.clientX - startMouseX;
+      indices.forEach((index) => {
+        designShape.vertices[index].x = Math.max(
+          0,
+          Math.min(canvas.width, startShape.vertices[index].x + dx)
+        );
+      });
+    } else if (side === "top" || side === "bottom") {
+      const dy = e.clientY - startMouseY;
+      indices.forEach((index) => {
+        designShape.vertices[index].y = Math.max(
+          0,
+          Math.min(canvas.height, startShape.vertices[index].y + dy)
+        );
+      });
+    }
+  }
 
   redrawCanvas();
   updateHandles();
