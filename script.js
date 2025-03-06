@@ -1,106 +1,896 @@
+// // Canvas & Context
+// const canvas = document.getElementById("designCanvas");
+// const ctx = canvas.getContext("2d");
+// const canvasContainer = document.getElementById("canvasContainer");
+
+// // Dimension Labels
+// const topDim = document.querySelector(".top-dim");
+// const rightDim = document.querySelector(".right-dim");
+// const bottomDim = document.querySelector(".bottom-dim");
+// const leftDim = document.querySelector(".left-dim");
+
+// // Controls
+// const shapeSelect = document.getElementById("shapeSelect");
+// const colorPicker = document.getElementById("colorPicker");
+// const dimensionsDisplay = document.getElementById("dimensions");
+
+// // Sidebar Items
+// const sidebarItems = document.querySelectorAll(".sidebar-item");
+
+// // Resize Handles
+// const handles = document.querySelectorAll(".resize-handle");
+
+// // Settings
+// const cellSize = 20;
+// const fillOpacity = 0.8;
+
+// // State Variables
+// let isDragging = false;
+// let dragStartX, dragStartY;
+// let paintColor = "#ff0000";
+// let currentStep = 0;
+// const steps = ["layouts", "patterns", "tileTypes", "edges", "colors"];
+// let activeSidebarSection = "layouts";
+
+// // Design Shape Object
+// const designShape = {
+//   x: canvas.width / 2 - 200,
+//   y: canvas.height / 2 - 150,
+//   width: 400,
+//   height: 300,
+//   legHeight: 50, // Added for double-legged-rectangle
+//   type: "rectangle",
+//   pattern: null,
+//   tileType: "standard",
+//   baseColor: "#000000",
+// };
+
+// // Painted Cells
+// const paintedCells = [];
+
+// // Data Arrays
+// const layouts = [
+//   { id: "rectangle", image: "./media/svg/layouts/layout1.svg" },
+//   { id: "l-shape", image: "./media/svg/layouts/layout2.svg" },
+//   { id: "u-shape", image: "./media/svg/layouts/layout3.svg" },
+//   { id: "double-legged-rectangle", image: "./media/svg/layouts/layout4.svg" },
+// ];
+
+// const patterns = [
+//   { id: "1", image: "./media/svg/patterns/patterns1.svg" },
+//   { id: "2", image: "./media/svg/patterns/patterns2.svg" },
+//   { id: "3", image: "./media/svg/patterns/patterns3.svg" },
+//   { id: "4", image: "./media/svg/patterns/patterns4.svg" },
+//   { id: "5", image: "./media/svg/patterns/patterns5.svg" },
+//   { id: "6", image: "./media/svg/patterns/patterns6.svg" },
+// ];
+
+// const tileTypes = [
+//   {
+//     id: "standard",
+//     name: "Standard Tile",
+//     image: "/placeholder.svg?height=60&width=80",
+//   },
+//   {
+//     id: "premium",
+//     name: "Premium Tile",
+//     image: "/placeholder.svg?height=60&width=80",
+//   },
+//   {
+//     id: "ceramic",
+//     name: "Ceramic Tile",
+//     image: "/placeholder.svg?height=60&width=80",
+//   },
+//   {
+//     id: "porcelain",
+//     name: "Porcelain Tile",
+//     image: "/placeholder.svg?height=60&width=80",
+//   },
+//   {
+//     id: "vinyl",
+//     name: "Vinyl Tile",
+//     image: "/placeholder.svg?height=60&width=80",
+//   },
+// ];
+
+// const colors = [
+//   { id: "red", value: "#ff0000", name: "Red" },
+//   { id: "blue", value: "#0000ff", name: "Blue" },
+//   { id: "green", value: "#008000", name: "Green" },
+//   { id: "purple", value: "#800080", name: "Purple" },
+// ];
+
+// // Utility: Convert Hex to RGBA
+// function hexToRgba(hex, opacity) {
+//   hex = hex.replace("#", "");
+//   const r = parseInt(hex.substring(0, 2), 16);
+//   const g = parseInt(hex.substring(2, 4), 16);
+//   const b = parseInt(hex.substring(4, 6), 16);
+//   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
+// }
+
+// // Create Shape Path
+// function getShapePath() {
+//   const { x, y, width, height, type, legHeight } = designShape;
+//   const path = new Path2D();
+
+//   if (type === "rectangle" || type === "square") {
+//     path.rect(x, y, width, height);
+//   } else if (type === "l-shape") {
+//     path.moveTo(x, y);
+//     path.lineTo(x + width, y);
+//     path.lineTo(x + width, y + height / 2);
+//     path.lineTo(x + width / 2, y + height / 2);
+//     path.lineTo(x + width / 2, y + height);
+//     path.lineTo(x, y + height);
+//     path.closePath();
+//   } else if (type === "u-shape") {
+//     path.moveTo(x, y);
+//     path.lineTo(x + width / 4, y);
+//     path.lineTo(x + width / 4, y + height / 2);
+//     path.lineTo(x + (width * 3) / 4, y + height / 2);
+//     path.lineTo(x + (width * 3) / 4, y);
+//     path.lineTo(x + width, y);
+//     path.lineTo(x + width, y + height);
+//     path.lineTo(x, y + height);
+//     path.closePath();
+//   } else if (type === "double-legged-rectangle") {
+//     const legWidth = width * 0.2;
+//     path.moveTo(x, y);
+//     path.lineTo(x + width, y);
+//     path.lineTo(x + width, y + height);
+//     path.lineTo(x + width - legWidth, y + height);
+//     path.lineTo(x + width - legWidth, y + height + legHeight);
+//     path.lineTo(x + legWidth, y + height + legHeight);
+//     path.lineTo(x + legWidth, y + height);
+//     path.lineTo(x, y + height);
+//     path.closePath();
+//   }
+
+//   return path;
+// }
+
+// // Update Dimensions Display
+// function updateDimensions() {
+//   let width = designShape.width;
+//   let height = designShape.height;
+//   if (designShape.type === "double-legged-rectangle") {
+//     height += designShape.legHeight; // Total height includes legs
+//   }
+//   const area = width * height; // Approximate for bounding box
+
+//   const ftWidth = (width / 100).toFixed(1);
+//   const ftHeight = (height / 100).toFixed(1);
+
+//   topDim.textContent = `${ftWidth}ft`;
+//   bottomDim.textContent = `${ftWidth}ft`;
+//   leftDim.textContent = `${ftHeight}ft`;
+//   rightDim.textContent = `${ftHeight}ft`;
+
+//   const x = designShape.x;
+//   const y = designShape.y;
+//   const w = designShape.width;
+//   const h =
+//     designShape.type === "double-legged-rectangle"
+//       ? designShape.height + designShape.legHeight
+//       : designShape.height;
+
+//   topDim.style.left = `${x + w / 2}px`;
+//   topDim.style.top = `${y - 20}px`;
+//   bottomDim.style.left = `${x + w / 2}px`;
+//   bottomDim.style.top = `${y + h}px`;
+//   leftDim.style.left = `${x - 45}px`;
+//   leftDim.style.top = `${y + h / 2}px`;
+//   rightDim.style.left = `${x + w}px`;
+//   rightDim.style.top = `${y + h / 2}px`;
+
+//   dimensionsDisplay.textContent = `Width: ${width}px | Height: ${height}px | Area: ${area} px²`;
+// }
+
+// // Draw Design Shape
+// function drawDesignShape() {
+//   ctx.save();
+//   const path = getShapePath();
+//   ctx.clip(path);
+//   ctx.fillStyle = designShape.pattern || designShape.baseColor;
+//   ctx.fill(path);
+//   ctx.restore();
+// }
+
+// // Draw Grid (Clipped to Shape)
+// function drawGrid() {
+//   ctx.save();
+//   const path = getShapePath();
+//   ctx.clip(path);
+//   ctx.beginPath();
+//   ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+//   for (
+//     let x = designShape.x;
+//     x <= designShape.x + designShape.width;
+//     x += cellSize
+//   ) {
+//     ctx.moveTo(x, designShape.y);
+//     ctx.lineTo(
+//       x,
+//       designShape.y +
+//         (designShape.type === "double-legged-rectangle"
+//           ? designShape.height + designShape.legHeight
+//           : designShape.height)
+//     );
+//   }
+//   for (
+//     let y = designShape.y;
+//     y <=
+//     designShape.y +
+//       (designShape.type === "double-legged-rectangle"
+//         ? designShape.height + designShape.legHeight
+//         : designShape.height);
+//     y += cellSize
+//   ) {
+//     ctx.moveTo(designShape.x, y);
+//     ctx.lineTo(designShape.x + designShape.width, y);
+//   }
+//   ctx.stroke();
+//   ctx.restore();
+// }
+
+// // Draw Painted Cells
+// function drawPaintedCells() {
+//   ctx.save();
+//   const path = getShapePath();
+//   ctx.clip(path);
+//   paintedCells.forEach((cell) => {
+//     ctx.fillStyle = hexToRgba(cell.color, fillOpacity);
+//     ctx.fillRect(cell.x, cell.y, cellSize, cellSize);
+//   });
+//   ctx.restore();
+// }
+
+// // Draw Shape Border
+// function drawShapeBorder() {
+//   ctx.save();
+//   ctx.strokeStyle = "#ffcc00";
+//   ctx.lineWidth = 2;
+//   const path = getShapePath();
+//   ctx.stroke(path);
+//   ctx.restore();
+// }
+
+// // Redraw Canvas
+// function redrawCanvas() {
+//   ctx.clearRect(0, 0, canvas.width, canvas.height);
+//   drawDesignShape();
+//   drawPaintedCells();
+//   drawGrid();
+//   drawShapeBorder();
+// }
+
+// // Update Resize Handles
+// function updateHandles() {
+//   let top, bottom;
+//   if (designShape.type === "double-legged-rectangle") {
+//     top = designShape.y;
+//     bottom = designShape.y + designShape.height + designShape.legHeight;
+//   } else {
+//     top = designShape.y;
+//     bottom = designShape.y + designShape.height;
+//   }
+//   const left = designShape.x;
+//   const right = designShape.x + designShape.width;
+//   const centerX = left + (right - left) / 2;
+//   const centerY = top + (bottom - top) / 2;
+
+//   document.querySelector(".handle-tl").style.left = left + "px";
+//   document.querySelector(".handle-tl").style.top = top + "px";
+//   document.querySelector(".handle-tm").style.left = centerX + "px";
+//   document.querySelector(".handle-tm").style.top = top + "px";
+//   document.querySelector(".handle-tr").style.left = right + "px";
+//   document.querySelector(".handle-tr").style.top = top + "px";
+//   document.querySelector(".handle-mr").style.left = right + "px";
+//   document.querySelector(".handle-mr").style.top = centerY + "px";
+//   document.querySelector(".handle-br").style.left = right + "px";
+//   document.querySelector(".handle-br").style.top = bottom + "px";
+//   document.querySelector(".handle-bm").style.left = centerX + "px";
+//   document.querySelector(".handle-bm").style.top = bottom + "px";
+//   document.querySelector(".handle-bl").style.left = left + "px";
+//   document.querySelector(".handle-bl").style.top = bottom + "px";
+//   document.querySelector(".handle-ml").style.left = left + "px";
+//   document.querySelector(".handle-ml").style.top = centerY + "px";
+// }
+
+// // Create SVG Pattern with Scaling
+// function createSVGPattern(imageUrl, patternSize = cellSize) {
+//   return new Promise((resolve) => {
+//     const img = new Image();
+//     img.src = imageUrl;
+//     img.onload = () => {
+//       const tempCanvas = document.createElement("canvas");
+//       tempCanvas.width = patternSize;
+//       tempCanvas.height = patternSize;
+//       const tempCtx = tempCanvas.getContext("2d");
+//       tempCtx.drawImage(img, 0, 0, patternSize, patternSize);
+//       const pattern = ctx.createPattern(tempCanvas, "repeat");
+//       resolve(pattern);
+//     };
+//   });
+// }
+
+// // Generate Layout Options
+// function generateLayoutOptions() {
+//   const layoutGrid = document.getElementById("layoutGrid");
+//   layoutGrid.innerHTML = "";
+
+//   layouts.forEach((layout) => {
+//     const layoutOption = document.createElement("div");
+//     layoutOption.className = "layout-option";
+//     layoutOption.setAttribute("data-layout", layout.id);
+//     if (layout.id === designShape.type) {
+//       layoutOption.classList.add("active");
+//     }
+
+//     const layoutImage = document.createElement("img");
+//     layoutImage.className = "layout-image";
+//     layoutImage.src = layout.image;
+//     layoutImage.alt = layout.id;
+
+//     const layoutLabel = document.createElement("span");
+//     layoutLabel.className = "layout-label";
+//     layoutLabel.textContent = layout.id.replace(/-/g, " ");
+
+//     layoutOption.appendChild(layoutImage);
+//     layoutOption.appendChild(layoutLabel);
+//     layoutGrid.appendChild(layoutOption);
+
+//     layoutOption.addEventListener("click", () => {
+//       document
+//         .querySelectorAll(".layout-option")
+//         .forEach((opt) => opt.classList.remove("active"));
+//       layoutOption.classList.add("active");
+
+//       designShape.type = layout.id;
+//       switch (layout.id) {
+//         case "rectangle":
+//           designShape.width = 400;
+//           designShape.height = 300;
+//           delete designShape.legHeight;
+//           break;
+//         case "l-shape":
+//           designShape.width = 500;
+//           designShape.height = 400;
+//           delete designShape.legHeight;
+//           break;
+//         case "u-shape":
+//           designShape.width = 450;
+//           designShape.height = 350;
+//           delete designShape.legHeight;
+//           break;
+//         case "double-legged-rectangle":
+//           designShape.width = 400;
+//           designShape.height = 300;
+//           designShape.legHeight = 50;
+//           break;
+//       }
+
+//       designShape.x = canvas.width / 2 - designShape.width / 2;
+//       designShape.y =
+//         canvas.height / 2 -
+//         (designShape.type === "double-legged-rectangle"
+//           ? designShape.height + designShape.legHeight
+//           : designShape.height) /
+//           2;
+
+//       redrawCanvas();
+//       updateHandles();
+//       updateDimensions();
+//     });
+//   });
+// }
+
+// // Generate Pattern Options
+// function generatePatternOptions() {
+//   const patternGrid = document.getElementById("patternGrid");
+//   patternGrid.innerHTML = "";
+
+//   patterns.forEach((pattern) => {
+//     const patternOption = document.createElement("div");
+//     patternOption.className = "pattern-option";
+//     patternOption.setAttribute("data-pattern", pattern.id);
+
+//     const patternImage = document.createElement("img");
+//     patternImage.className = "pattern-image";
+//     patternImage.src = pattern.image;
+//     patternImage.alt = pattern.id;
+
+//     const patternLabel = document.createElement("span");
+//     patternLabel.className = "pattern-label";
+//     patternLabel.textContent = `Pattern ${pattern.id}`;
+
+//     patternOption.appendChild(patternImage);
+//     patternOption.appendChild(patternLabel);
+//     patternGrid.appendChild(patternOption);
+
+//     patternOption.addEventListener("click", async () => {
+//       document
+//         .querySelectorAll(".pattern-option")
+//         .forEach((opt) => opt.classList.remove("active"));
+//       patternOption.classList.add("active");
+
+//       designShape.pattern = await createSVGPattern(pattern.image, cellSize);
+//       redrawCanvas();
+//     });
+//   });
+// }
+
+// // Generate Tile Type Options
+// function generateTileTypeOptions() {
+//   const tileTypeGrid = document.getElementById("tileTypeGrid");
+//   tileTypeGrid.innerHTML = "";
+
+//   tileTypes.forEach((tileType) => {
+//     const tileTypeOption = document.createElement("div");
+//     tileTypeOption.className = "tile-type-option";
+//     tileTypeOption.setAttribute("data-tile-type", tileType.id);
+//     if (tileType.id === designShape.tileType) {
+//       tileTypeOption.classList.add("active");
+//     }
+
+//     const tileTypeImage = document.createElement("img");
+//     tileTypeImage.className = "tile-type-image";
+//     tileTypeImage.src = tileType.image;
+//     tileTypeImage.alt = tileType.name;
+
+//     const tileTypeLabel = document.createElement("span");
+//     tileTypeLabel.className = "tile-type-label";
+//     tileTypeLabel.textContent = tileType.name;
+
+//     tileTypeOption.appendChild(tileTypeImage);
+//     tileTypeOption.appendChild(tileTypeLabel);
+//     tileTypeGrid.appendChild(tileTypeOption);
+
+//     tileTypeOption.addEventListener("click", () => {
+//       document
+//         .querySelectorAll(".tile-type-option")
+//         .forEach((opt) => opt.classList.remove("active"));
+//       tileTypeOption.classList.add("active");
+//       designShape.tileType = tileType.id;
+//       redrawCanvas();
+//     });
+//   });
+// }
+
+// // Generate Color Swatches
+// function generateColorSwatches() {
+//   const colorSwatches = document.getElementById("colorSwatches");
+//   colorSwatches.innerHTML = "";
+
+//   colors.forEach((color) => {
+//     const colorSwatch = document.createElement("div");
+//     colorSwatch.className = "color-swatch";
+//     colorSwatch.setAttribute("data-color", color.id);
+//     colorSwatch.style.backgroundColor = color.value;
+//     if (color.value === paintColor) {
+//       colorSwatch.classList.add("active");
+//     }
+
+//     colorSwatches.appendChild(colorSwatch);
+
+//     colorSwatch.addEventListener("click", () => {
+//       document
+//         .querySelectorAll(".color-swatch")
+//         .forEach((swatch) => swatch.classList.remove("active"));
+//       colorSwatch.classList.add("active");
+//       paintColor = color.value;
+//       colorPicker.value = color.value;
+//     });
+//   });
+// }
+
+// // Sidebar Interactions
+// function setupSidebarInteractions() {
+//   sidebarItems.forEach((item) => {
+//     const header = item.querySelector(".sidebar-header");
+//     header.addEventListener("click", () => {
+//       const section = item.getAttribute("data-section");
+//       if (item.classList.contains("active")) {
+//         item.classList.remove("active");
+//         const arrow = item.querySelector(".sidebar-arrow i");
+//         if (arrow) arrow.className = "ri-arrow-down-s-line";
+//         return;
+//       }
+
+//       sidebarItems.forEach((otherItem) => {
+//         otherItem.classList.remove("active");
+//         const arrow = otherItem.querySelector(".sidebar-arrow i");
+//         if (arrow) arrow.className = "ri-arrow-down-s-line";
+//       });
+
+//       item.classList.add("active");
+//       const arrow = item.querySelector(".sidebar-arrow i");
+//       if (arrow) arrow.className = "ri-arrow-up-s-line";
+
+//       activeSidebarSection = section;
+//       currentStep = steps.indexOf(section);
+
+//       canvasContainer.classList.toggle(
+//         "resize-handles-hidden",
+//         section !== "layouts"
+//       );
+//     });
+//   });
+// }
+
+// // Update Active Step
+// function updateActiveStep(step) {
+//   sidebarItems.forEach((item) => {
+//     item.classList.remove("active");
+//     const arrow = item.querySelector(".sidebar-arrow i");
+//     if (arrow) arrow.className = "ri-arrow-down-s-line";
+//   });
+
+//   const activeItem = document.querySelector(
+//     `.sidebar-item[data-section="${steps[step]}"]`
+//   );
+//   if (activeItem) {
+//     activeItem.classList.add("active");
+//     const arrow = activeItem.querySelector(".sidebar-arrow i");
+//     if (arrow) arrow.className = "ri-arrow-up-s-line";
+//   }
+
+//   canvasContainer.classList.toggle(
+//     "resize-handles-hidden",
+//     steps[step] !== "layouts"
+//   );
+//   activeSidebarSection = steps[step];
+// }
+
+// // Painting Functionality
+// canvas.addEventListener("click", (e) => {
+//   if (isDragging || activeSidebarSection !== "colors") return;
+
+//   const rect = canvas.getBoundingClientRect();
+//   const clickX = e.clientX - rect.left;
+//   const clickY = e.clientY - rect.top;
+
+//   const path = getShapePath();
+//   if (!ctx.isPointInPath(path, clickX, clickY)) return;
+
+//   const cellX =
+//     Math.floor((clickX - designShape.x) / cellSize) * cellSize + designShape.x;
+//   const cellY =
+//     Math.floor((clickY - designShape.y) / cellSize) * cellSize + designShape.y;
+
+//   let cellFound = false;
+//   for (const cell of paintedCells) {
+//     if (cell.x === cellX && cell.y === cellY) {
+//       cell.color = paintColor;
+//       cellFound = true;
+//       break;
+//     }
+//   }
+//   if (!cellFound) {
+//     paintedCells.push({ x: cellX, y: cellY, color: paintColor });
+//   }
+//   redrawCanvas();
+// });
+
+// // Resize Functionality
+// let activeHandle = null;
+// let startMouseX, startMouseY;
+// let startShape = {};
+
+// handles.forEach((handle) => {
+//   handle.addEventListener("mousedown", (e) => {
+//     activeHandle = e.target.getAttribute("data-handle");
+//     startMouseX = e.clientX;
+//     startMouseY = e.clientY;
+//     startShape = { ...designShape };
+//     e.stopPropagation();
+//     e.preventDefault();
+//   });
+// });
+
+// document.addEventListener("mousemove", (e) => {
+//   if (!activeHandle) return;
+//   const dx = e.clientX - startMouseX;
+//   const dy = e.clientY - startMouseY;
+
+//   const minWidth = 50;
+//   const minHeight = 50;
+
+//   let newX = startShape.x;
+//   let newY = startShape.y;
+//   let newWidth = startShape.width;
+//   let newHeight = startShape.height;
+//   let newLegHeight = startShape.legHeight || 50;
+
+//   if (designShape.type === "double-legged-rectangle") {
+//     switch (activeHandle) {
+//       case "tm":
+//         newY = startShape.y + dy;
+//         newY = Math.min(newY, startShape.y + startShape.height - minHeight);
+//         newY = Math.max(newY, 0);
+//         newHeight = startShape.y + startShape.height - newY;
+//         break;
+//       case "mr":
+//         newWidth = startShape.width + dx;
+//         newWidth = Math.max(newWidth, minWidth);
+//         newWidth = Math.min(newWidth, canvas.width - startShape.x);
+//         break;
+//       case "bm":
+//         newLegHeight = startShape.legHeight + dy;
+//         newLegHeight = Math.max(newLegHeight, 0);
+//         newLegHeight = Math.min(
+//           newLegHeight,
+//           canvas.height - startShape.y - startShape.height
+//         );
+//         break;
+//       case "ml":
+//         newX = startShape.x + dx;
+//         newX = Math.min(newX, startShape.x + startShape.width - minWidth);
+//         newX = Math.max(newX, 0);
+//         newWidth = startShape.x + startShape.width - newX;
+//         break;
+//     }
+//     designShape.x = newX;
+//     designShape.y = newY;
+//     designShape.width = newWidth;
+//     designShape.height = newHeight;
+//     designShape.legHeight = newLegHeight;
+//   } else {
+//     switch (activeHandle) {
+//       case "tm":
+//         newY = startShape.y + dy;
+//         newY = Math.min(newY, startShape.y + startShape.height - minHeight);
+//         newY = Math.max(newY, 0);
+//         newHeight = startShape.y + startShape.height - newY;
+//         break;
+//       case "mr":
+//         newWidth = startShape.width + dx;
+//         newWidth = Math.max(newWidth, minWidth);
+//         newWidth = Math.min(newWidth, canvas.width - startShape.x);
+//         break;
+//       case "bm":
+//         newHeight = startShape.height + dy;
+//         newHeight = Math.max(newHeight, minHeight);
+//         newHeight = Math.min(newHeight, canvas.height - startShape.y);
+//         break;
+//       case "ml":
+//         newX = startShape.x + dx;
+//         newX = Math.min(newX, startShape.x + startShape.width - minWidth);
+//         newX = Math.max(newX, 0);
+//         newWidth = startShape.x + startShape.width - newX;
+//         break;
+//     }
+//     designShape.x = newX;
+//     designShape.y = newY;
+//     designShape.width = newWidth;
+//     designShape.height = newHeight;
+//   }
+
+//   redrawCanvas();
+//   updateHandles();
+//   updateDimensions();
+// });
+
+// document.addEventListener("mouseup", () => {
+//   activeHandle = null;
+// });
+
+// // Navigation Buttons
+// document.querySelector(".next-btn").addEventListener("click", () => {
+//   if (currentStep < steps.length - 1) {
+//     currentStep++;
+//     updateActiveStep(currentStep);
+//   }
+// });
+
+// document.querySelector(".back-btn").addEventListener("click", () => {
+//   if (currentStep > 0) {
+//     currentStep--;
+//     updateActiveStep(currentStep);
+//   }
+// });
+
+// // Initialize Application
+// function init() {
+//   paintColor = colorPicker.value;
+
+//   generateLayoutOptions();
+//   generatePatternOptions();
+//   generateTileTypeOptions();
+//   generateColorSwatches();
+
+//   setupSidebarInteractions();
+//   updateActiveStep(currentStep);
+
+//   redrawCanvas();
+//   updateHandles();
+//   updateDimensions();
+// }
+
+// init();
+
 // Canvas & Context
 const canvas = document.getElementById("designCanvas");
 const ctx = canvas.getContext("2d");
 const canvasContainer = document.getElementById("canvasContainer");
 
-// References to dimension labels
+// Dimension Labels
 const topDim = document.querySelector(".top-dim");
 const rightDim = document.querySelector(".right-dim");
 const bottomDim = document.querySelector(".bottom-dim");
 const leftDim = document.querySelector(".left-dim");
 
 // Controls
-const shapeSelect = document.getElementById("shapeSelect");
-const colorPicker = document.getElementById("colorPicker");
-const colorSelect = document.getElementById("colorSelect");
-const tileTypeSelect = document.getElementById("tileTypeSelect");
 const dimensionsDisplay = document.getElementById("dimensions");
 
-// Sidebar items
+// Sidebar Items
 const sidebarItems = document.querySelectorAll(".sidebar-item");
 
-// Resize handles
-const handles = document.querySelectorAll(".resize-handle");
-
-// Settings (Grid Size)
-const cellSize = 20;
+// Settings
+const cellSize = 30;
 const fillOpacity = 0.8;
 
-// Add these variables at the top of the file, after other variable declarations
+// State Variables
 let isDragging = false;
 let dragStartX, dragStartY;
-let paintColor = "#ff0000"; // Added paintColor variable
+let paintColor = "#ff0000";
+let currentStep = 0;
+const steps = ["layouts", "patterns", "tileTypes", "edges", "colors"];
+let activeSidebarSection = "layouts";
+let activeHandle = null;
+let startMouseX, startMouseY;
+let startShape = {};
 
-// Initialize the floor layout centered in the canvas
+// Design Shape Object
 const designShape = {
-  x: canvas.width / 2 - 200,
-  y: canvas.height / 2 - 150,
-  width: 400,
-  height: 300,
   type: "rectangle",
+  vertices: [],
   pattern: null,
   tileType: "standard",
-  baseColor: "#000000", // This is for the shape's base color
+  baseColor: "#000000",
 };
 
-// Painted cells
+// Painted Cells
 const paintedCells = [];
 
-// Active sidebar section
-let activeSidebarSection = "layouts";
+// Data Arrays (unchanged)
+const layouts = [
+  { id: "rectangle", image: "./media/svg/layouts/layout1.svg" },
+  { id: "l-shape", image: "./media/svg/layouts/layout2.svg" },
+  { id: "u-shape", image: "./media/svg/layouts/layout3.svg" },
+  { id: "double-legged-rectangle", image: "./media/svg/layouts/layout4.svg" },
+];
+const patterns = [
+  { id: "1", image: "./media/svg/patterns/patterns1.svg" },
+  { id: "2", image: "./media/svg/patterns/patterns2.svg" },
+  { id: "3", image: "./media/svg/patterns/patterns3.svg" },
+  { id: "4", image: "./media/svg/patterns/patterns4.svg" },
+  { id: "5", image: "./media/svg/patterns/patterns5.svg" },
+  { id: "6", image: "./media/svg/patterns/patterns6.svg" },
+];
+const tileTypes = [
+  {
+    id: "standard",
+    name: "Standard Tile",
+    image: "/placeholder.svg?height=60&width=80",
+  },
+  {
+    id: "premium",
+    name: "Premium Tile",
+    image: "/placeholder.svg?height=60&width=80",
+  },
+  {
+    id: "ceramic",
+    name: "Ceramic Tile",
+    image: "/placeholder.svg?height=60&width=80",
+  },
+  {
+    id: "porcelain",
+    name: "Porcelain Tile",
+    image: "/placeholder.svg?height=60&width=80",
+  },
+  {
+    id: "vinyl",
+    name: "Vinyl Tile",
+    image: "/placeholder.svg?height=60&width=80",
+  },
+];
+const colors = [
+  { id: "red", value: "#ff0000", name: "Red" },
+  { id: "blue", value: "#0000ff", name: "Blue" },
+  { id: "green", value: "#008000", name: "Green" },
+  { id: "purple", value: "#800080", name: "Purple" },
+];
 
-// Convert hex color to RGBA string.
+// Utility: Convert Hex to RGBA
 function hexToRgba(hex, opacity) {
   hex = hex.replace("#", "");
-  const r = Number.parseInt(hex.substring(0, 2), 16);
-  const g = Number.parseInt(hex.substring(2, 4), 16);
-  const b = Number.parseInt(hex.substring(4, 6), 16);
+  const r = parseInt(hex.substring(0, 2), 16);
+  const g = parseInt(hex.substring(2, 4), 16);
+  const b = parseInt(hex.substring(4, 6), 16);
   return `rgba(${r}, ${g}, ${b}, ${opacity})`;
 }
 
-// Create a Path2D for the current design shape.
-function getShapePath() {
-  const { x, y, width, height, type } = designShape;
-  const path = new Path2D();
+// Define Initial Vertices for Each Shape
+function getInitialVertices(type) {
+  const width = 400;
+  const height = 300;
+  const legWidth = width / 4;
+  const legHeight = height / 2;
+  const x = canvas.width / 2 - width / 2;
+  const y = canvas.height / 2 - height / 2;
 
-  if (type === "rectangle" || type === "square") {
-    path.rect(x, y, width, height);
-  } else if (type === "l-shape") {
-    // Create an L-shape path
-    path.moveTo(x, y);
-    path.lineTo(x + width, y);
-    path.lineTo(x + width, y + height / 2);
-    path.lineTo(x + width / 2, y + height / 2);
-    path.lineTo(x + width / 2, y + height);
-    path.lineTo(x, y + height);
-    path.closePath();
-  } else if (type === "u-shape") {
-    // Create a U-shape path
-    path.moveTo(x, y);
-    path.lineTo(x + width / 4, y);
-    path.lineTo(x + width / 4, y + height / 2);
-    path.lineTo(x + (width * 3) / 4, y + height / 2);
-    path.lineTo(x + (width * 3) / 4, y);
-    path.lineTo(x + width, y);
-    path.lineTo(x + width, y + height);
-    path.lineTo(x, y + height);
-    path.closePath();
-  } else if (type === "circle") {
-    const centerX = x + width / 2;
-    const centerY = y + height / 2;
-    const radius = width / 2;
-    path.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+  switch (type) {
+    case "rectangle":
+      return [
+        { x: x, y: y },
+        { x: x + width, y: y },
+        { x: x + width, y: y + height },
+        { x: x, y: y + height },
+      ];
+    case "l-shape":
+      return [
+        { x: x, y: y },
+        { x: x + width, y: y },
+        { x: x + width, y: y + legHeight },
+        { x: x + legWidth, y: y + legHeight },
+        { x: x + legWidth, y: y + height },
+        { x: x, y: y + height },
+      ];
+    case "u-shape":
+      return [
+        { x: x, y: y },
+        { x: x + legWidth, y: y },
+        { x: x + legWidth, y: y + legHeight },
+        { x: x + width - legWidth, y: y + legHeight },
+        { x: x + width - legWidth, y: y },
+        { x: x + width, y: y },
+        { x: x + width, y: y + height },
+        { x: x, y: y + height },
+      ];
+    case "double-legged-rectangle":
+      const legHeightExtra = 50;
+      return [
+        { x: x, y: y },
+        { x: x + width, y: y },
+        { x: x + width, y: y + height },
+        { x: x + width - legWidth, y: y + height },
+        { x: x + width - legWidth, y: y + height + legHeightExtra },
+        { x: x + legWidth, y: y + height + legHeightExtra },
+        { x: x + legWidth, y: y + height },
+        { x: x, y: y + height },
+      ];
+    default:
+      return [];
   }
+}
 
+// Create Shape Path from Vertices
+function getShapePath() {
+  const path = new Path2D();
+  const vertices = designShape.vertices;
+  if (vertices.length > 0) {
+    path.moveTo(vertices[0].x, vertices[0].y);
+    for (let i = 1; i < vertices.length; i++) {
+      path.lineTo(vertices[i].x, vertices[i].y);
+    }
+    path.closePath();
+  }
   return path;
 }
 
-// Update dimensions display.
+// Update Dimensions Display
 function updateDimensions() {
-  const { width, height, x, y } = designShape;
-  const area = width * height;
-
-  // Update dimension labels
+  if (designShape.vertices.length === 0) return;
+  const xs = designShape.vertices.map((v) => v.x);
+  const ys = designShape.vertices.map((v) => v.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  const width = maxX - minX;
+  const height = maxY - minY;
   const ftWidth = (width / 100).toFixed(1);
   const ftHeight = (height / 100).toFixed(1);
 
@@ -109,68 +899,82 @@ function updateDimensions() {
   leftDim.textContent = `${ftHeight}ft`;
   rightDim.textContent = `${ftHeight}ft`;
 
-  // Position dimension labels along the shape sides
-  // Top dimension - centered on top edge
-  topDim.style.left = `${x + width / 2}px`;
-  topDim.style.top = `${y - 20}px`;
+  topDim.style.left = `${minX + width / 2}px`;
+  topDim.style.top = `${minY - 20}px`;
+  bottomDim.style.left = `${minX + width / 2}px`;
+  bottomDim.style.top = `${maxY + 5}px`;
+  leftDim.style.left = `${minX - 45}px`;
+  leftDim.style.top = `${minY + height / 2}px`;
+  rightDim.style.left = `${maxX + 5}px`;
+  rightDim.style.top = `${minY + height / 2}px`;
 
-  // Bottom dimension - centered on bottom edge
-  bottomDim.style.left = `${x + width / 2}px`;
-  bottomDim.style.top = `${y + height}px`;
-
-  // Left dimension - centered on left edge
-  leftDim.style.left = `${x - 45}px`;
-  leftDim.style.top = `${y + height / 2}px`;
-
-  // Right dimension - centered on right edge
-  rightDim.style.left = `${x + width}px`;
-  rightDim.style.top = `${y + height / 2}px`;
-
-  // Update dimensions display in control panel
+  const area = width * height;
   dimensionsDisplay.textContent = `Width: ${width}px | Height: ${height}px | Area: ${area} px²`;
 }
 
-// Draw the design shape background using clipping.
+// Draw Design Shape
+// function drawDesignShape() {
+//   ctx.save();
+//   const path = getShapePath();
+//   ctx.clip(path);
+//   ctx.fillStyle = designShape.pattern || designShape.baseColor;
+//   ctx.fill(path);
+//   ctx.restore();
+// }
+
 function drawDesignShape() {
   ctx.save();
   const path = getShapePath();
-  ctx.clip(path);
-  ctx.fillStyle = designShape.pattern
-    ? designShape.pattern
-    : designShape.baseColor; // Updated to use baseColor
-  ctx.fill(path);
+  ctx.clip(path); // Clip to the shape's boundaries
+
+  if (designShape.pattern) {
+    // Calculate the bounding box from vertices
+    const xs = designShape.vertices.map((v) => v.x);
+    const ys = designShape.vertices.map((v) => v.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    const bbWidth = maxX - minX;
+    const bbHeight = maxY - minY;
+
+    // Draw the pattern image scaled to the bounding box
+    ctx.drawImage(designShape.pattern, minX, minY, bbWidth, bbHeight);
+  } else {
+    // Fallback to base color if no pattern
+    ctx.fillStyle = designShape.baseColor;
+    ctx.fill(path);
+  }
+
   ctx.restore();
 }
 
-// Draw grid lines clipped to the shape.
+// Draw Grid (Clipped to Shape)
 function drawGrid() {
   ctx.save();
   const path = getShapePath();
   ctx.clip(path);
   ctx.beginPath();
   ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-  // Use the bounding box of the designShape.
-  for (
-    let x = designShape.x;
-    x <= designShape.x + designShape.width;
-    x += cellSize
-  ) {
-    ctx.moveTo(x, designShape.y);
-    ctx.lineTo(x, designShape.y + designShape.height);
+  const xs = designShape.vertices.map((v) => v.x);
+  const ys = designShape.vertices.map((v) => v.y);
+  const minX = Math.min(...xs);
+  const maxX = Math.max(...xs);
+  const minY = Math.min(...ys);
+  const maxY = Math.max(...ys);
+  for (let x = minX; x <= maxX; x += cellSize) {
+    ctx.moveTo(x, minY);
+    ctx.lineTo(x, maxY);
   }
-  for (
-    let y = designShape.y;
-    y <= designShape.y + designShape.height;
-    y += cellSize
-  ) {
-    ctx.moveTo(designShape.x, y);
-    ctx.lineTo(designShape.x + designShape.width, y);
+  for (let y = minY; y <= maxY; y += cellSize) {
+    ctx.moveTo(minX, y);
+    ctx.lineTo(maxX, y);
   }
   ctx.stroke();
   ctx.restore();
 }
 
-// Draw painted cells clipped to the shape
+// Draw Painted Cells
 function drawPaintedCells() {
   ctx.save();
   const path = getShapePath();
@@ -182,7 +986,7 @@ function drawPaintedCells() {
   ctx.restore();
 }
 
-// Draw the border of the shape.
+// Draw Shape Border
 function drawShapeBorder() {
   ctx.save();
   ctx.strokeStyle = "#ffcc00";
@@ -192,7 +996,7 @@ function drawShapeBorder() {
   ctx.restore();
 }
 
-// Redraw the entire canvas.
+// Redraw Canvas
 function redrawCanvas() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   drawDesignShape();
@@ -201,558 +1005,326 @@ function redrawCanvas() {
   drawShapeBorder();
 }
 
-// Update positions of the eight resize handles
+// Create and Update Resize Handles
+function createHandles() {
+  document
+    .querySelectorAll(".resize-handle")
+    .forEach((handle) => handle.remove());
+  designShape.vertices.forEach((vertex, index) => {
+    const handle = document.createElement("div");
+    handle.className = "resize-handle";
+    handle.setAttribute("data-index", index);
+    handle.style.left = vertex.x + "px";
+    handle.style.top = vertex.y + "px";
+    canvasContainer.appendChild(handle);
+  });
+}
+
 function updateHandles() {
-  const hs = 1;
-  const left = designShape.x - hs / 2;
-  const right = designShape.x + designShape.width - hs / 2;
-  const top = designShape.y - hs / 2;
-  const bottom = designShape.y + designShape.height - hs / 2;
-  const centerX = designShape.x + designShape.width / 2 - hs / 2;
-  const centerY = designShape.y + designShape.height / 2 - hs / 2;
-
-  document.querySelector(".handle-tl").style.left = left + "px";
-  document.querySelector(".handle-tl").style.top = top + "px";
-
-  document.querySelector(".handle-tm").style.left = centerX + "px";
-  document.querySelector(".handle-tm").style.top = top + "px";
-
-  document.querySelector(".handle-tr").style.left = right + "px";
-  document.querySelector(".handle-tr").style.top = top + "px";
-
-  document.querySelector(".handle-mr").style.left = right + "px";
-  document.querySelector(".handle-mr").style.top = centerY + "px";
-
-  document.querySelector(".handle-br").style.left = right + "px";
-  document.querySelector(".handle-br").style.top = bottom + "px";
-
-  document.querySelector(".handle-bm").style.left = centerX + "px";
-  document.querySelector(".handle-bm").style.top = bottom + "px";
-
-  document.querySelector(".handle-bl").style.left = left + "px";
-  document.querySelector(".handle-bl").style.top = bottom + "px";
-
-  document.querySelector(".handle-ml").style.left = left + "px";
-  document.querySelector(".handle-ml").style.top = centerY + "px";
-}
-
-// Pattern Functions
-function createDiagonalLinesPattern() {
-  const patternCanvas = document.createElement("canvas");
-  patternCanvas.width = 20;
-  patternCanvas.height = 20;
-  const pctx = patternCanvas.getContext("2d");
-  pctx.fillStyle = "#222";
-  pctx.fillRect(0, 0, 20, 20);
-  pctx.strokeStyle = "#444";
-  pctx.lineWidth = 2;
-  pctx.beginPath();
-  pctx.moveTo(0, 20);
-  pctx.lineTo(20, 0);
-  pctx.stroke();
-  return ctx.createPattern(patternCanvas, "repeat");
-}
-
-function createCheckerboardPattern() {
-  const patternCanvas = document.createElement("canvas");
-  patternCanvas.width = 20;
-  patternCanvas.height = 20;
-  const pctx = patternCanvas.getContext("2d");
-  pctx.fillStyle = "#111";
-  pctx.fillRect(0, 0, 20, 20);
-  pctx.fillStyle = "#333";
-  pctx.fillRect(0, 0, 10, 10);
-  pctx.fillRect(10, 10, 10, 10);
-  return ctx.createPattern(patternCanvas, "repeat");
-}
-
-function createHerringbonePattern() {
-  const patternCanvas = document.createElement("canvas");
-  patternCanvas.width = 30;
-  patternCanvas.height = 30;
-  const pctx = patternCanvas.getContext("2d");
-  pctx.fillStyle = "#222";
-  pctx.fillRect(0, 0, 30, 30);
-
-  // Draw herringbone pattern
-  pctx.fillStyle = "#444";
-  pctx.beginPath();
-  pctx.moveTo(0, 0);
-  pctx.lineTo(15, 15);
-  pctx.lineTo(0, 30);
-  pctx.fill();
-
-  pctx.beginPath();
-  pctx.moveTo(30, 0);
-  pctx.lineTo(15, 15);
-  pctx.lineTo(30, 30);
-  pctx.fill();
-
-  return ctx.createPattern(patternCanvas, "repeat");
-}
-
-function createBasketweavePattern() {
-  const patternCanvas = document.createElement("canvas");
-  patternCanvas.width = 40;
-  patternCanvas.height = 40;
-  const pctx = patternCanvas.getContext("2d");
-  pctx.fillStyle = "#222";
-  pctx.fillRect(0, 0, 40, 40);
-
-  // Draw basketweave pattern
-  pctx.fillStyle = "#444";
-  pctx.fillRect(0, 0, 20, 20);
-  pctx.fillRect(20, 20, 20, 20);
-
-  return ctx.createPattern(patternCanvas, "repeat");
-}
-
-// Setup dragging functionality
-// function setupDragging() {
-//   canvas.addEventListener("mousedown", startDragging);
-//   canvas.addEventListener("mousemove", drag);
-//   canvas.addEventListener("mouseup", stopDragging);
-//   canvas.addEventListener("mouseleave", stopDragging);
-// }
-
-// function startDragging(e) {
-//   const rect = canvas.getBoundingClientRect();
-//   const clickX = e.clientX - rect.left;
-//   const clickY = e.clientY - rect.top;
-
-//   // Check if the click is inside the shape
-//   const path = getShapePath();
-//   if (ctx.isPointInPath(path, clickX, clickY)) {
-//     isDragging = true;
-//     dragStartX = clickX - designShape.x;
-//     dragStartY = clickY - designShape.y;
-//   }
-// }
-
-// function drag(e) {
-//   if (!isDragging) return;
-
-//   const rect = canvas.getBoundingClientRect();
-//   const mouseX = e.clientX - rect.left;
-//   const mouseY = e.clientY - rect.top;
-
-//   designShape.x = mouseX - dragStartX;
-//   designShape.y = mouseY - dragStartY;
-
-//   // Constrain the shape within the canvas
-//   designShape.x = Math.max(
-//     0,
-//     Math.min(designShape.x, canvas.width - designShape.width)
-//   );
-//   designShape.y = Math.max(
-//     0,
-//     Math.min(designShape.y, canvas.height - designShape.height)
-//   );
-
-//   redrawCanvas();
-//   updateHandles();
-//   updateDimensions();
-// }
-
-// function stopDragging() {
-//   isDragging = false;
-// }
-
-// Initialize canvas and interface
-function init() {
-  // Set initial paint color to match the color picker
-  paintColor = colorPicker.value;
-
-  redrawCanvas();
-  updateHandles();
-  updateDimensions();
-
-  // Set event handlers for sidebar
-  setupSidebarInteractions();
-
-  // Set up pattern options
-  setupPatternOptions();
-
-  // Set up layout options
-  setupLayoutOptions();
-
-  // Set up color options
-  setupColorOptions();
-
-  // Set up tile type options
-  setupTileTypeOptions();
-
-  // Enable dragging
-  setupDragging();
-}
-
-// Handle sidebar interactions
-function setupSidebarInteractions() {
-  sidebarItems.forEach((item) => {
-    const header = item.querySelector(".sidebar-header");
-    header.addEventListener("click", () => {
-      // Get sidebar title
-      const title = item
-        .querySelector(".sidebar-title")
-        .textContent.toLowerCase();
-
-      // Toggle the active state for this sidebar item
-      item.classList.toggle("active");
-      const arrow = item.querySelector(".sidebar-arrow");
-      if (arrow) {
-        arrow.textContent = item.classList.contains("active") ? "▲" : "▼";
-      }
-
-      if (title === "layout size") {
-        // Enable resize mode
-        activeSidebarSection = "size";
-      } else if (title === "color") {
-        // Show color picker
-        activeSidebarSection = "color";
-      }
-    });
+  const handles = document.querySelectorAll(".resize-handle");
+  handles.forEach((handle, index) => {
+    handle.style.left = designShape.vertices[index].x + "px";
+    handle.style.top = designShape.vertices[index].y + "px";
   });
 }
 
-// Set up pattern options
-function setupPatternOptions() {
-  const patternOptions = document.querySelectorAll(".pattern-option");
-  patternOptions.forEach((option) => {
-    option.addEventListener("click", () => {
-      const patternType = option.getAttribute("data-pattern");
+// Create SVG Pattern with Scaling (unchanged)
+// function createSVGPattern(imageUrl, patternSize = cellSize) {
+//   return new Promise((resolve) => {
+//     const img = new Image();
+//     img.src = imageUrl;
+//     img.onload = () => {
+//       const tempCanvas = document.createElement("canvas");
+//       tempCanvas.width = patternSize;
+//       tempCanvas.height = patternSize;
+//       const tempCtx = tempCanvas.getContext("2d");
+//       tempCtx.drawImage(img, 0, 0, patternSize, patternSize);
+//       const pattern = ctx.createPattern(tempCanvas, "repeat");
+//       resolve(pattern);
+//     };
+//   });
+// }
 
-      switch (patternType) {
-        case "diagonal-lines":
-          designShape.pattern = createDiagonalLinesPattern();
-          break;
-        case "checkerboard":
-          designShape.pattern = createCheckerboardPattern();
-          break;
-        case "herringbone":
-          designShape.pattern = createHerringbonePattern();
-          break;
-        case "basketweave":
-          designShape.pattern = createBasketweavePattern();
-          break;
-      }
+function loadPatternImage(imageUrl) {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.src = imageUrl;
+    img.onload = () => resolve(img);
+  });
+}
 
+// Generate Layout Options
+function generateLayoutOptions() {
+  const layoutGrid = document.getElementById("layoutGrid");
+  layoutGrid.innerHTML = "";
+  layouts.forEach((layout) => {
+    const layoutOption = document.createElement("div");
+    layoutOption.className = "layout-option";
+    layoutOption.setAttribute("data-layout", layout.id);
+    if (layout.id === designShape.type) layoutOption.classList.add("active");
+
+    const layoutImage = document.createElement("img");
+    layoutImage.className = "layout-image";
+    layoutImage.src = layout.image;
+    layoutImage.alt = layout.id;
+
+    const layoutLabel = document.createElement("span");
+    layoutLabel.className = "layout-label";
+    layoutLabel.textContent = layout.id.replace(/-/g, " ");
+
+    layoutOption.appendChild(layoutImage);
+    layoutOption.appendChild(layoutLabel);
+    layoutGrid.appendChild(layoutOption);
+
+    layoutOption.addEventListener("click", () => {
+      document
+        .querySelectorAll(".layout-option")
+        .forEach((opt) => opt.classList.remove("active"));
+      layoutOption.classList.add("active");
+      designShape.type = layout.id;
+      designShape.vertices = getInitialVertices(layout.id);
+      createHandles();
       redrawCanvas();
-    });
-  });
-}
-
-// Set up color options
-function setupColorOptions() {
-  // Color picker event
-  colorPicker.addEventListener("input", (e) => {
-    paintColor = e.target.value; // Updated to set paintColor
-    colorSelect.value = e.target.value;
-  });
-
-  // Color dropdown event
-  colorSelect.addEventListener("change", (e) => {
-    paintColor = e.target.value; // Updated to set paintColor
-    colorPicker.value = e.target.value;
-  });
-}
-
-// Set up tile type options
-function setupTileTypeOptions() {
-  tileTypeSelect.addEventListener("change", (e) => {
-    designShape.tileType = e.target.value;
-    // You could add additional logic here to change appearance based on tile type
-    redrawCanvas();
-  });
-}
-
-// Set up layout options
-function setupLayoutOptions() {
-  const layoutOptions = document.querySelectorAll(".layout-option");
-  layoutOptions.forEach((option) => {
-    option.addEventListener("click", () => {
-      const layoutType = option.getAttribute("data-layout");
-
-      switch (layoutType) {
-        case "rectangle":
-          designShape.type = "rectangle";
-          designShape.width = 400;
-          designShape.height = 300;
-          break;
-        case "l-shape":
-          designShape.type = "l-shape";
-          designShape.width = 500;
-          designShape.height = 400;
-          break;
-        case "u-shape":
-          designShape.type = "u-shape";
-          designShape.width = 450;
-          designShape.height = 350;
-          break;
-        case "square":
-          designShape.type = "square";
-          designShape.width = 400;
-          designShape.height = 400;
-          break;
-      }
-
-      // Center the design in the canvas
-      designShape.x = canvas.width / 2 - designShape.width / 2;
-      designShape.y = canvas.height / 2 - designShape.height / 2;
-
-      redrawCanvas();
-      updateHandles();
       updateDimensions();
     });
   });
 }
 
+// Generate Pattern Options (unchanged)
+// function generatePatternOptions() {
+//   const patternGrid = document.getElementById("patternGrid");
+//   patternGrid.innerHTML = "";
+//   patterns.forEach((pattern) => {
+//     const patternOption = document.createElement("div");
+//     patternOption.className = "pattern-option";
+//     patternOption.setAttribute("data-pattern", pattern.id);
+
+//     const patternImage = document.createElement("img");
+//     patternImage.className = "pattern-image";
+//     patternImage.src = pattern.image;
+//     patternImage.alt = pattern.id;
+
+//     const patternLabel = document.createElement("span");
+//     patternLabel.className = "pattern-label";
+//     patternLabel.textContent = `Pattern ${pattern.id}`;
+
+//     patternOption.appendChild(patternImage);
+//     patternOption.appendChild(patternLabel);
+//     patternGrid.appendChild(patternOption);
+
+//     patternOption.addEventListener("click", async () => {
+//       document
+//         .querySelectorAll(".pattern-option")
+//         .forEach((opt) => opt.classList.remove("active"));
+//       patternOption.classList.add("active");
+//       designShape.pattern = await createSVGPattern(pattern.image, cellSize);
+//       redrawCanvas();
+//     });
+//   });
+// }
+
+function generatePatternOptions() {
+  const patternGrid = document.getElementById("patternGrid");
+  patternGrid.innerHTML = "";
+  patterns.forEach((pattern) => {
+    const patternOption = document.createElement("div");
+    patternOption.className = "pattern-option";
+    patternOption.setAttribute("data-pattern", pattern.id);
+
+    const patternImage = document.createElement("img");
+    patternImage.className = "pattern-image";
+    patternImage.src = pattern.image;
+    patternImage.alt = pattern.id;
+
+    const patternLabel = document.createElement("span");
+    patternLabel.className = "pattern-label";
+    patternLabel.textContent = `Pattern ${pattern.id}`;
+
+    patternOption.appendChild(patternImage);
+    patternOption.appendChild(patternLabel);
+    patternGrid.appendChild(patternOption);
+
+    patternOption.addEventListener("click", async () => {
+      document
+        .querySelectorAll(".pattern-option")
+        .forEach((opt) => opt.classList.remove("active"));
+      patternOption.classList.add("active");
+      const img = await loadPatternImage(pattern.image);
+      designShape.pattern = img; // Store the Image object
+      redrawCanvas();
+    });
+  });
+}
+
+// Generate Tile Type Options (unchanged)
+function generateTileTypeOptions() {
+  const tileTypeGrid = document.getElementById("tileTypeGrid");
+  tileTypeGrid.innerHTML = "";
+  tileTypes.forEach((tileType) => {
+    const tileTypeOption = document.createElement("div");
+    tileTypeOption.className = "tile-type-option";
+    tileTypeOption.setAttribute("data-tile-type", tileType.id);
+    if (tileType.id === designShape.tileType)
+      tileTypeOption.classList.add("active");
+
+    const tileTypeImage = document.createElement("img");
+    tileTypeImage.className = "tile-type-image";
+    tileTypeImage.src = tileType.image;
+    tileTypeImage.alt = tileType.name;
+
+    const tileTypeLabel = document.createElement("span");
+    tileTypeLabel.className = "tile-type-label";
+    tileTypeLabel.textContent = tileType.name;
+
+    tileTypeOption.appendChild(tileTypeImage);
+    tileTypeOption.appendChild(tileTypeLabel);
+    tileTypeGrid.appendChild(tileTypeOption);
+
+    tileTypeOption.addEventListener("click", () => {
+      document
+        .querySelectorAll(".tile-type-option")
+        .forEach((opt) => opt.classList.remove("active"));
+      tileTypeOption.classList.add("active");
+      designShape.tileType = tileType.id;
+      redrawCanvas();
+    });
+  });
+}
+
+// Generate Color Swatches (unchanged)
+function generateColorSwatches() {
+  const colorSwatches = document.getElementById("colorSwatches");
+  colorSwatches.innerHTML = "";
+  colors.forEach((color) => {
+    const colorSwatch = document.createElement("div");
+    colorSwatch.className = "color-swatch";
+    colorSwatch.setAttribute("data-color", color.id);
+    colorSwatch.style.backgroundColor = color.value;
+    if (color.value === paintColor) colorSwatch.classList.add("active");
+
+    colorSwatches.appendChild(colorSwatch);
+
+    colorSwatch.addEventListener("click", () => {
+      document
+        .querySelectorAll(".color-swatch")
+        .forEach((swatch) => swatch.classList.remove("active"));
+      colorSwatch.classList.add("active");
+      paintColor = color.value;
+    });
+  });
+}
+
+// Sidebar Interactions (unchanged)
+function setupSidebarInteractions() {
+  sidebarItems.forEach((item) => {
+    const header = item.querySelector(".sidebar-header");
+    header.addEventListener("click", () => {
+      const section = item.getAttribute("data-section");
+      if (item.classList.contains("active")) {
+        item.classList.remove("active");
+        const arrow = item.querySelector(".sidebar-arrow i");
+        if (arrow) arrow.className = "ri-arrow-down-s-line";
+        return;
+      }
+      sidebarItems.forEach((otherItem) => {
+        otherItem.classList.remove("active");
+        const arrow = otherItem.querySelector(".sidebar-arrow i");
+        if (arrow) arrow.className = "ri-arrow-down-s-line";
+      });
+      item.classList.add("active");
+      const arrow = item.querySelector(".sidebar-arrow i");
+      if (arrow) arrow.className = "ri-arrow-up-s-line";
+      activeSidebarSection = section;
+      currentStep = steps.indexOf(section);
+      canvasContainer.classList.toggle(
+        "resize-handles-hidden",
+        section !== "layouts"
+      );
+    });
+  });
+}
+
+// Update Active Step (unchanged)
+function updateActiveStep(step) {
+  sidebarItems.forEach((item) => {
+    item.classList.remove("active");
+    const arrow = item.querySelector(".sidebar-arrow i");
+    if (arrow) arrow.className = "ri-arrow-down-s-line";
+  });
+  const activeItem = document.querySelector(
+    `.sidebar-item[data-section="${steps[step]}"]`
+  );
+  if (activeItem) {
+    activeItem.classList.add("active");
+    const arrow = activeItem.querySelector(".sidebar-arrow i");
+    if (arrow) arrow.className = "ri-arrow-up-s-line";
+  }
+  canvasContainer.classList.toggle(
+    "resize-handles-hidden",
+    steps[step] !== "layouts"
+  );
+  activeSidebarSection = steps[step];
+}
+
 // Painting Functionality
 canvas.addEventListener("click", (e) => {
-  if (isDragging) return; // Prevent painting when dragging
-
+  if (isDragging || activeSidebarSection !== "colors") return;
   const rect = canvas.getBoundingClientRect();
   const clickX = e.clientX - rect.left;
   const clickY = e.clientY - rect.top;
-
-  // Only enable painting when color section is active
-  if (activeSidebarSection !== "color") return;
-
-  // Use the shape path to determine if the click is inside.
   const path = getShapePath();
   if (!ctx.isPointInPath(path, clickX, clickY)) return;
 
-  // Click to grid inside the design shape bounding box.
-  const cellX =
-    Math.floor((clickX - designShape.x) / cellSize) * cellSize + designShape.x;
-  const cellY =
-    Math.floor((clickY - designShape.y) / cellSize) * cellSize + designShape.y;
+  const xs = designShape.vertices.map((v) => v.x);
+  const ys = designShape.vertices.map((v) => v.y);
+  const minX = Math.min(...xs);
+  const cellX = Math.floor((clickX - minX) / cellSize) * cellSize + minX;
+  const cellY = Math.floor(clickY / cellSize) * cellSize;
 
-  // Update cell if it exists; otherwise add a new one.
   let cellFound = false;
   for (const cell of paintedCells) {
     if (cell.x === cellX && cell.y === cellY) {
-      cell.color = paintColor; // Use paintColor instead of colorPicker.value
+      cell.color = paintColor;
       cellFound = true;
       break;
     }
   }
   if (!cellFound) {
-    paintedCells.push({ x: cellX, y: cellY, color: paintColor }); // Use paintColor
+    paintedCells.push({ x: cellX, y: cellY, color: paintColor });
   }
   redrawCanvas();
 });
 
-// Shape Selection
-shapeSelect.addEventListener("change", (e) => {
-  designShape.type = e.target.value;
-  // For non-rectangle shapes, enforce a square bounding box.
-  if (designShape.type !== "rectangle") {
-    const size = Math.min(designShape.width, designShape.height);
-    designShape.width = size;
-    designShape.height = size;
-  }
-  redrawCanvas();
-  updateHandles();
-  updateDimensions();
-});
-
-// --- Resize / Reshape Functionality ---
-let activeHandle = null;
-let startMouseX, startMouseY;
-let startShape = {};
-
-// Add mousedown listener to each handle.
-handles.forEach((handle) => {
-  handle.addEventListener("mousedown", (e) => {
-    activeHandle = e.target.getAttribute("data-handle");
+// Resize Functionality with Vertices
+canvasContainer.addEventListener("mousedown", (e) => {
+  if (
+    e.target.classList.contains("resize-handle") &&
+    activeSidebarSection === "layouts"
+  ) {
+    activeHandle = e.target.getAttribute("data-index");
     startMouseX = e.clientX;
     startMouseY = e.clientY;
-    startShape = { ...designShape };
+    startShape = JSON.parse(JSON.stringify(designShape));
     e.stopPropagation();
     e.preventDefault();
-  });
+  }
 });
 
 document.addEventListener("mousemove", (e) => {
-  if (!activeHandle) return;
+  if (activeHandle === null) return;
   const dx = e.clientX - startMouseX;
   const dy = e.clientY - startMouseY;
+  const index = parseInt(activeHandle);
 
-  // Store original values to check if we're at canvas boundaries
-  const originalX = designShape.x;
-  const originalY = designShape.y;
-  const originalWidth = designShape.width;
-  const originalHeight = designShape.height;
-
-  if (designShape.type === "rectangle") {
-    // Free resizing for rectangle.
-    switch (activeHandle) {
-      case "tl":
-        designShape.x = startShape.x + dx;
-        designShape.y = startShape.y + dy;
-        designShape.width = startShape.width - dx;
-        designShape.height = startShape.height - dy;
-        break;
-      case "tm":
-        designShape.y = startShape.y + dy;
-        designShape.height = startShape.height - dy;
-        break;
-      case "tr":
-        designShape.y = startShape.y + dy;
-        designShape.width = startShape.width + dx;
-        designShape.height = startShape.height - dy;
-        break;
-      case "mr":
-        designShape.width = startShape.width + dx;
-        break;
-      case "br":
-        designShape.width = startShape.width + dx;
-        designShape.height = startShape.height + dy;
-        break;
-      case "bm":
-        designShape.height = startShape.height + dy;
-        break;
-      case "bl":
-        designShape.x = startShape.x + dx;
-        designShape.width = startShape.width - dx;
-        designShape.height = startShape.height + dy;
-        break;
-      case "ml":
-        designShape.x = startShape.x + dx;
-        designShape.width = startShape.width - dx;
-        break;
-    }
-  } else {
-    // For non-rectangle shapes (square, circle, triangle, pentagon), enforce a square.
-    switch (activeHandle) {
-      case "tl": {
-        const newWidth = startShape.width - dx;
-        const newHeight = startShape.height - dy;
-        const newSize = Math.min(newWidth, newHeight);
-        designShape.x = startShape.x + (startShape.width - newSize);
-        designShape.y = startShape.y + (startShape.height - newSize);
-        designShape.width = newSize;
-        designShape.height = newSize;
-        break;
-      }
-      case "tm": {
-        const newSize = startShape.height - dy;
-        designShape.y = startShape.y + (startShape.height - newSize);
-        designShape.width = newSize;
-        designShape.height = newSize;
-        break;
-      }
-      case "tr": {
-        const newWidth = startShape.width + dx;
-        const newHeight = startShape.height - dy;
-        const newSize = Math.min(newWidth, newHeight);
-        designShape.y = startShape.y + (startShape.height - newSize);
-        designShape.width = newSize;
-        designShape.height = newSize;
-        break;
-      }
-      case "mr": {
-        const newSize = startShape.width + dx;
-        designShape.width = newSize;
-        designShape.height = newSize;
-        break;
-      }
-      case "br": {
-        const newWidth = startShape.width + dx;
-        const newHeight = startShape.height + dy;
-        const newSize = Math.min(newWidth, newHeight);
-        designShape.width = newSize;
-        designShape.height = newSize;
-        break;
-      }
-      case "bm": {
-        const newSize = startShape.height + dy;
-        designShape.width = newSize;
-        designShape.height = newSize;
-        break;
-      }
-      case "bl": {
-        const newWidth = startShape.width - dx;
-        const newHeight = startShape.height + dy;
-        const newSize = Math.min(newWidth, newHeight);
-        designShape.x = startShape.x + (startShape.width - newSize);
-        designShape.width = newSize;
-        designShape.height = newSize;
-        break;
-      }
-      case "ml": {
-        const newSize = startShape.width - dx;
-        designShape.x = startShape.x + (startShape.width - newSize);
-        designShape.width = newSize;
-        designShape.height = newSize;
-        break;
-      }
-    }
-  }
-
-  // Enforce a minimum size of 50px.
-  if (designShape.width < 50) {
-    designShape.width = 50;
-    // If we're resizing from the left, maintain the right edge position
-    if (activeHandle.includes("l")) {
-      designShape.x = originalX + originalWidth - 50;
-    }
-    if (designShape.type !== "rectangle") designShape.height = 50;
-  }
-
-  if (designShape.height < 50) {
-    designShape.height = 50;
-    // If we're resizing from the top, maintain the bottom edge position
-    if (activeHandle.includes("t")) {
-      designShape.y = originalY + originalHeight - 50;
-    }
-    if (designShape.type !== "rectangle") designShape.width = 50;
-  }
-
-  // Enforce canvas boundaries so shape stays within canvas dimensions
-  // Left boundary
-  if (designShape.x < 0) {
-    // Only adjust width if we're resizing from the left
-    if (activeHandle.includes("l")) {
-      designShape.width += designShape.x; // Reduce width by the amount we're out of bounds
-      designShape.x = 0;
-    } else {
-      designShape.x = 0;
-    }
-  }
-
-  // Top boundary
-  if (designShape.y < 0) {
-    // Only adjust height if we're resizing from the top
-    if (activeHandle.includes("t")) {
-      designShape.height += designShape.y; // Reduce height by the amount we're out of bounds
-      designShape.y = 0;
-    } else {
-      designShape.y = 0;
-    }
-  }
-
-  // Right boundary
-  if (designShape.x + designShape.width > canvas.width) {
-    // Only adjust width if we're resizing from the right
-    if (activeHandle.includes("r")) {
-      designShape.width = canvas.width - designShape.x;
-    } else {
-      // If we're resizing from the left, adjust x position to keep right edge in place
-      designShape.x = canvas.width - designShape.width;
-    }
-  }
-
-  // Bottom boundary
-  if (designShape.y + designShape.height > canvas.height) {
-    // Only adjust height if we're resizing from the bottom
-    if (activeHandle.includes("b")) {
-      designShape.height = canvas.height - designShape.y;
-    } else {
-      // If we're resizing from the top, adjust y position to keep bottom edge in place
-      designShape.y = canvas.height - designShape.height;
-    }
-  }
+  // Update only the dragged vertex
+  designShape.vertices[index].x = Math.max(
+    0,
+    Math.min(canvas.width, startShape.vertices[index].x + dx)
+  );
+  designShape.vertices[index].y = Math.max(
+    0,
+    Math.min(canvas.height, startShape.vertices[index].y + dy)
+  );
 
   redrawCanvas();
   updateHandles();
@@ -763,14 +1335,33 @@ document.addEventListener("mouseup", () => {
   activeHandle = null;
 });
 
-// Next and Back button functionality
+// Navigation Buttons (unchanged)
 document.querySelector(".next-btn").addEventListener("click", () => {
-  alert("Design completed! Moving to next step...");
+  if (currentStep < steps.length - 1) {
+    currentStep++;
+    updateActiveStep(currentStep);
+  }
 });
 
 document.querySelector(".back-btn").addEventListener("click", () => {
-  alert("Going back to previous step...");
+  if (currentStep > 0) {
+    currentStep--;
+    updateActiveStep(currentStep);
+  }
 });
 
-// Call init() to set up the application
+// Initialize Application
+function init() {
+  designShape.vertices = getInitialVertices("rectangle");
+  generateLayoutOptions();
+  generatePatternOptions();
+  generateTileTypeOptions();
+  generateColorSwatches();
+  setupSidebarInteractions();
+  updateActiveStep(currentStep);
+  createHandles();
+  redrawCanvas();
+  updateDimensions();
+}
+
 init();

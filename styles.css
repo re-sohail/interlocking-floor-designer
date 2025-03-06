@@ -27,45 +27,11 @@ body {
   border-bottom: 1px solid #e0e0e0;
 }
 
-.logo {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
 .logo-img {
   height: 200px;
   width: 200px;
 }
 
-.layoutImage {
-  height: 20px;
-  width: 20px;
-}
-
-.logo-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.logo-title {
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 1px;
-}
-
-.logo-subtitle {
-  font-size: 12px;
-  font-weight: 500;
-}
-
-.logo-tagline {
-  font-size: 8px;
-  color: #666;
-  letter-spacing: 0.5px;
-}
-
-/* Update view controls to only show 2D */
 .view-controls {
   display: flex;
   margin-left: 40px;
@@ -112,16 +78,6 @@ body {
   border-radius: 50%;
 }
 
-.profile-name {
-  margin: 0 8px;
-  font-size: 14px;
-}
-
-.profile-arrow {
-  font-size: 10px;
-  color: #666;
-}
-
 /* Main Content */
 .main-content {
   display: flex;
@@ -135,10 +91,12 @@ body {
   background-color: white;
   border-right: 1px solid #e0e0e0;
   overflow-y: auto;
+  padding: 10px 15px;
 }
 
 .sidebar-item {
-  border-bottom: 1px solid #e0e0e0;
+  margin-top: 10px;
+  border-radius: 10px;
 }
 
 .sidebar-header {
@@ -146,6 +104,8 @@ body {
   align-items: center;
   padding: 12px 16px;
   cursor: pointer;
+  border: 2px solid #ab977c;
+  border-radius: 10px;
 }
 
 .sidebar-icon {
@@ -160,27 +120,41 @@ body {
 }
 
 .sidebar-arrow {
-  font-size: 10px;
+  font-size: 18px;
   color: #666;
 }
 
 .sidebar-content {
-  padding: 16px;
   display: none;
+  padding: 16px 0;
 }
 
 .sidebar-item.active .sidebar-content {
   display: block;
 }
 
-/* Add styles for layout shapes */
-.layout-grid {
+.sidebar-item.active .sidebar-header {
+  background-color: #ab977c;
+  color: white;
+  border: 2px solid #ab977c;
+}
+
+.sidebar-item.active .sidebar-arrow {
+  color: white;
+}
+
+/* Layout Grid Styles */
+.layout-grid,
+.pattern-grid,
+.tile-type-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
 
-.layout-option {
+.layout-option,
+.pattern-option,
+.tile-type-option {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -190,78 +164,49 @@ body {
   transition: background-color 0.2s;
 }
 
-.layout-option:hover {
-  background-color: #f0f0f0;
+.layout-option.active,
+.pattern-option.active,
+.tile-type-option.active {
+  border: 2px solid #ab977c;
 }
 
-.layout-shape {
-  width: 60px;
-  height: 60px;
-  border: 2px solid #333;
-  margin-bottom: 6px;
-  background-color: #eee;
-}
-
-.rectangle-shape {
+.layout-image,
+.pattern-image,
+.tile-type-image {
   width: 80px;
   height: 60px;
+  object-fit: contain;
+  object-position: center;
 }
 
-.square-shape {
-  width: 60px;
-  height: 60px;
-}
-
-.l-shape {
-  position: relative;
-  width: 80px;
-  height: 60px;
-}
-
-.l-shape:after {
-  content: "";
-  position: absolute;
-  top: 30px;
-  left: 0;
-  width: 50px;
-  height: 30px;
-  background-color: #eee;
-  border-right: 2px solid #333;
-  border-bottom: 2px solid #333;
-}
-
-.u-shape {
-  position: relative;
-  width: 80px;
-  height: 60px;
-}
-
-.u-shape:before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 20px;
-  height: 60px;
-  background-color: #eee;
-  border-right: 2px solid #333;
-}
-
-.u-shape:after {
-  content: "";
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 20px;
-  height: 60px;
-  background-color: #eee;
-  border-left: 2px solid #333;
-}
-
-.layout-label {
+.layout-label,
+.pattern-label,
+.tile-type-label {
   font-size: 12px;
   color: #333;
   margin-top: 4px;
+  text-align: center;
+}
+
+/* Color Swatches */
+.color-swatches {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.color-swatch {
+  width: 60px;
+  height: 40px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  margin: 0 auto;
+}
+
+.color-swatch.active {
+  border: 3px solid #333;
 }
 
 /* Canvas Area */
@@ -298,21 +243,6 @@ canvas {
   z-index: 10;
 }
 
-/* Corner handles */
-.handle-tl {
-  cursor: nw-resize;
-}
-.handle-tr {
-  cursor: ne-resize;
-}
-.handle-br {
-  cursor: se-resize;
-}
-.handle-bl {
-  cursor: sw-resize;
-}
-
-/* Edge handles */
 .handle-tm {
   cursor: n-resize;
 }
@@ -371,7 +301,7 @@ canvas {
   font-weight: 500;
 }
 
-/* Control Panel (Hidden by default) */
+/* Control Panel */
 .control-panel {
   position: fixed;
   top: 70px;
@@ -382,7 +312,6 @@ canvas {
   padding: 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   z-index: 100;
-  display: none;
 }
 
 .control-group {
@@ -404,116 +333,12 @@ canvas {
   border-radius: 4px;
 }
 
-.control-group button {
-  padding: 6px 12px;
-  margin-right: 8px;
-  background-color: #f0f0f0;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
-}
-
 #dimensions {
   font-size: 12px;
   color: #666;
 }
 
-/* Add styles for pattern options */
-.pattern-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
-}
-
-.pattern-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 4px;
-  transition: background-color 0.2s;
-}
-
-.pattern-option:hover {
-  background-color: #f0f0f0;
-}
-
-.pattern-preview {
-  width: 60px;
-  height: 60px;
-  border: 1px solid #ccc;
-  margin-bottom: 6px;
-}
-
-.diagonal-lines {
-  background-image: repeating-linear-gradient(
-    45deg,
-    #222,
-    #222 2px,
-    #444 2px,
-    #444 10px
-  );
-}
-
-.checkerboard {
-  background-image: linear-gradient(45deg, #222 25%, transparent 25%),
-    linear-gradient(-45deg, #222 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #222 75%),
-    linear-gradient(-45deg, transparent 75%, #222 75%);
-  background-size: 20px 20px;
-  background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
-}
-
-.herringbone {
-  background-image: linear-gradient(45deg, #222 25%, transparent 25%),
-    linear-gradient(135deg, #222 25%, transparent 25%),
-    linear-gradient(45deg, transparent 75%, #222 75%),
-    linear-gradient(135deg, transparent 75%, #222 75%);
-  background-size: 25px 25px;
-  background-position: 0 0, 12.5px 0, 12.5px -12.5px, 0px 12.5px;
-}
-
-.basketweave {
-  background-image: linear-gradient(0deg, transparent 50%, #222 50%),
-    linear-gradient(90deg, transparent 50%, #222 50%);
-  background-size: 20px 20px;
-}
-
-.pattern-label {
-  font-size: 12px;
-  color: #333;
-  margin-top: 4px;
-}
-
-/* New styles for tile type and color dropdowns */
-.tile-type-select,
-.color-select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  margin-top: 8px;
-  font-size: 14px;
-}
-
-.color-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-.color-option {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.color-option input[type="color"] {
-  width: 60px;
-  height: 40px;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  cursor: pointer;
+/* Hide resize handles when not in layout step */
+.resize-handles-hidden .resize-handle {
+  display: none;
 }
