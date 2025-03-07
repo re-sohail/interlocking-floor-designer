@@ -28,8 +28,9 @@ body {
 }
 
 .logo-img {
-  height: 200px;
+  height: 40px;
   width: 200px;
+  object-fit: contain;
 }
 
 .view-controls {
@@ -171,12 +172,13 @@ body {
 }
 
 .layout-image,
-.pattern-image,
+.pattern-canvas,
 .tile-type-image {
   width: 80px;
   height: 60px;
   object-fit: contain;
   object-position: center;
+  border: 1px solid #ccc;
 }
 
 .layout-label,
@@ -243,17 +245,15 @@ canvas {
   z-index: 10;
 }
 
-.handle-tm {
-  cursor: n-resize;
-}
-.handle-mr {
-  cursor: e-resize;
-}
-.handle-bm {
-  cursor: s-resize;
-}
-.handle-ml {
-  cursor: w-resize;
+.side-handle {
+  position: absolute;
+  width: 15px;
+  height: 15px;
+  border: 2px solid #e93f33;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  cursor: pointer;
+  z-index: 10;
 }
 
 /* Dimension Labels */
@@ -339,23 +339,85 @@ canvas {
 }
 
 /* Hide resize handles when not in layout step */
-.resize-handles-hidden .resize-handle {
-  display: none;
-}
-
-.side-handle {
-  position: absolute;
-  width: 15px;
-  height: 15px;
-  /* background-color: #e93f33;  */
-  border: 2px solid #e93f33;
-  border-radius: 50%;
-  transform: translate(-50%, -50%);
-  cursor: pointer;
-  z-index: 10;
-}
-
 .resize-handles-hidden .resize-handle,
 .resize-handles-hidden .side-handle {
   display: none;
 }
+
+.pattern-image {
+  width: 100%;
+  height: 60px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+  background: white;
+}
+
+.pattern-option {
+  border: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.pattern-option:hover {
+  transform: scale(1.05);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.pattern-option.active {
+  border-color: #ab977c;
+  box-shadow: 0 2px 8px rgba(171, 151, 124, 0.3);
+}
+
+/* Ensure canvasContainer is positioned for absolute children */
+.canvas-container {
+  position: relative;
+  width: 800px; /* Match canvas width */
+  height: 600px; /* Match canvas height */
+}
+
+/* Base style for all reshape handles */
+.reshape-handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background-color: blue;
+  border: 1px solid white;
+  border-radius: 50%; /* Circular handles */
+  cursor: move;
+  transform: translate(-50%, -50%); /* Center on position */
+  z-index: 10; /* Above canvas */
+}
+
+/* Differentiate corner and midpoint handles */
+.corner-handle {
+  background-color: red;
+}
+
+.midpoint-handle {
+  background-color: green;
+}
+
+/* Hide handles when not in layouts section */
+.resize-handles-hidden .reshape-handle {
+  display: none;
+}
+
+.dimension-label {
+  position: absolute;
+  font-size: 12px;
+  color: #333;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 5px;
+  border-radius: 3px;
+  pointer-events: none;
+}
+
+.dimension-label.horizontal {
+  transform: translateX(-50%);
+}
+
+.dimension-label.vertical {
+  transform: translateY(-50%);
+}
+
+
+
