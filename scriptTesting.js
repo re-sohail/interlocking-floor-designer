@@ -38,9 +38,9 @@ const designShape = {
   type: "rectangle",
   vertices: [],
   areas: [],
-  patternImage: null, // Store the loaded image instead of a pattern
+  patternImage: null,
   tileType: "standard",
-  baseColor: "#000000",
+  baseColor: "#CCCCCC",
 };
 
 // Painted Cells
@@ -184,7 +184,7 @@ function createGridPattern(ctx) {
   }
 
   // Draw the thick red border around the entire grid
-  const redBorderWidth = 20;
+  const redBorderWidth = 30;
   patternCtx.strokeStyle = "red";
   patternCtx.lineWidth = redBorderWidth;
   // Stroke rectangle is offset by half the border width
@@ -241,15 +241,15 @@ function createColoredGridPattern(ctx, color) {
   }
 
   // Draw the thick red border around the entire grid (unchanged)
-  const redBorderWidth = 30;
-  patternCtx.strokeStyle = "red";
-  patternCtx.lineWidth = redBorderWidth;
-  patternCtx.strokeRect(
-    redBorderWidth / 2,
-    redBorderWidth / 2,
-    canvasSize - redBorderWidth,
-    canvasSize - redBorderWidth
-  );
+  // const redBorderWidth = 30;
+  // patternCtx.strokeStyle = "red";
+  // patternCtx.lineWidth = redBorderWidth;
+  // patternCtx.strokeRect(
+  //   redBorderWidth / 2,
+  //   redBorderWidth / 2,
+  //   canvasSize - redBorderWidth,
+  //   canvasSize - redBorderWidth
+  // );
 
   // Draw the inner square with the selected color (replacing yellow)
   const innerBorderWidth = 30;

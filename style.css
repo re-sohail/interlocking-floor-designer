@@ -377,23 +377,29 @@ canvas {
 /* Base style for all reshape handles */
 .reshape-handle {
   position: absolute;
-  width: 10px;
-  height: 10px;
-  background-color: blue;
+  width: 20px;
+  height: 20px;
+  background-color: red;
   border: 1px solid white;
-  border-radius: 50%; /* Circular handles */
+  border-radius: 50%;
   cursor: move;
-  transform: translate(-50%, -50%); /* Center on position */
+  transform: translate(-50%, -50%); 
   z-index: 10; /* Above canvas */
 }
 
 /* Differentiate corner and midpoint handles */
 .corner-handle {
-  background-color: red;
+  /* background-color: red; */
+  background-image: url("./media/svg/reshapeIcon.svg");
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 .midpoint-handle {
-  background-color: green;
+  /* background-color: yellow; */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='white' width='24px' height='24px'%3E%3Cpath d='M0 0h24v24H0z' fill='none'/%3E%3Cpath d='M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-2-9h4v2h-4v-2z'/%3E%3C/svg%3E");
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
 /* Hide handles when not in layouts section */
@@ -418,6 +424,3 @@ canvas {
 .dimension-label.vertical {
   transform: translateY(-50%);
 }
-
-
-
