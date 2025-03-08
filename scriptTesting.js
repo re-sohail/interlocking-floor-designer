@@ -17,7 +17,7 @@ const dimensionsDisplay = document.getElementById("dimensions");
 const sidebarItems = document.querySelectorAll(".sidebar-item");
 
 // Settings
-const cellSize = 30;
+const cellSize = 25;
 const fillOpacity = 0.8;
 const pixelsPerFoot = 100;
 
@@ -41,6 +41,7 @@ const designShape = {
   patternImage: null,
   tileType: "standard",
   baseColor: "#CCCCCC",
+  borderColor: "",
 };
 
 // Painted Cells
@@ -90,6 +91,11 @@ const tileTypes = [
     name: "Vinyl Tile",
     image: "/placeholder.svg?height=60&width=80",
   },
+];
+
+const edgeColors = [
+  { id: "black", value: "#000000", name: "Black" },
+  { id: "red", value: "#ff0000", name: "Red" },
 ];
 
 const colors = [
@@ -184,7 +190,7 @@ function createGridPattern(ctx) {
   }
 
   // Draw the thick red border around the entire grid
-  const redBorderWidth = 30;
+  const redBorderWidth = 25;
   patternCtx.strokeStyle = "red";
   patternCtx.lineWidth = redBorderWidth;
   // Stroke rectangle is offset by half the border width
@@ -196,7 +202,7 @@ function createGridPattern(ctx) {
   );
 
   // Draw the bold yellow inner square (inset by two cells from each side)
-  const yellowBorderWidth = 30;
+  const yellowBorderWidth = 25;
   patternCtx.strokeStyle = "yellow";
   patternCtx.lineWidth = yellowBorderWidth;
   // The inner square spans from the 3rd cell to the 8th cell (1-indexed)
@@ -252,7 +258,7 @@ function createColoredGridPattern(ctx, color) {
   // );
 
   // Draw the inner square with the selected color (replacing yellow)
-  const innerBorderWidth = 30;
+  const innerBorderWidth = 25;
   patternCtx.strokeStyle = color;
   patternCtx.lineWidth = innerBorderWidth;
   patternCtx.strokeRect(
@@ -834,9 +840,28 @@ function drawPaintedCells() {
 }
 
 // Draw Shape Border (unchanged)
+// function drawShapeBorder() {
+//   ctx.save();
+//   ctx.strokeStyle = "#666666";
+//   ctx.lineWidth = 3;
+//   const path = getShapePath();
+//   ctx.stroke(path);
+//   if (activeSidebarSection === "layouts" && designShape.areas) {
+//     designShape.areas.forEach((area) => {
+//       if (area.vertices || area.x !== undefined) {
+//         ctx.strokeStyle = "#0066cc";
+//         ctx.lineWidth = 1.5;
+//         const areaPath = getAreaPath(area);
+//         ctx.stroke(areaPath);
+//       }
+//     });
+//   }
+//   ctx.restore();
+// }
+
 function drawShapeBorder() {
   ctx.save();
-  ctx.strokeStyle = "#666666";
+  ctx.strokeStyle = designShape.borderColor; // Use dynamic border color
   ctx.lineWidth = 3;
   const path = getShapePath();
   ctx.stroke(path);
@@ -1392,6 +1417,33 @@ function resizeCanvas() {
 
 window.addEventListener("resize", resizeCanvas);
 
+// edges function
+function generateEdgeColorOptions() {
+  const edgeColorGrid = document.getElementById("edgeColorGrid");
+  edgeColorGrid.innerHTML = ""; // Clear existing content
+  edgeColors.forEach((color) => {
+    const colorSwatch = document.createElement("div");
+    colorSwatch.className = "edge-color-swatch";
+    colorSwatch.setAttribute("data-color", color.id);
+    colorSwatch.style.backgroundColor = color.value;
+    // Highlight the swatch if it matches the current border color
+    if (color.value === designShape.borderColor)
+      colorSwatch.classList.add("active");
+
+    edgeColorGrid.appendChild(colorSwatch);
+
+    colorSwatch.addEventListener("click", () => {
+      // Remove active class from all swatches
+      document
+        .querySelectorAll(".edge-color-swatch")
+        .forEach((swatch) => swatch.classList.remove("active"));
+      colorSwatch.classList.add("active"); // Highlight selected swatch
+      designShape.borderColor = color.value; // Update border color
+      redrawCanvas(); // Redraw canvas with new border color
+    });
+  });
+}
+
 // Initialize Application
 function init() {
   const areas = getInitialAreas("rectangle");
@@ -1403,6 +1455,7 @@ function init() {
   generatePatternOptions();
   generateTileTypeOptions();
   generateColorSwatches();
+  generateEdgeColorOptions(); // Added to initialize edge color options
   setupSidebarInteractions();
   updateActiveStep(currentStep);
   createHandles();
