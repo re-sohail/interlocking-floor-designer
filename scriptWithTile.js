@@ -4,12 +4,6 @@ const ctx = canvas.getContext("2d");
 const canvasContainer = document.getElementById("canvasContainer");
 const areaDimensionsContainer = document.getElementById("areaDimensions");
 
-// Dimension Labels
-const topDim = document.querySelector(".top-dim");
-const rightDim = document.querySelector(".right-dim");
-const bottomDim = document.querySelector(".bottom-dim");
-const leftDim = document.querySelector(".left-dim");
-
 // Controls
 const dimensionsDisplay = document.getElementById("dimensions");
 
@@ -17,8 +11,10 @@ const dimensionsDisplay = document.getElementById("dimensions");
 const sidebarItems = document.querySelectorAll(".sidebar-item");
 
 // Settings
-const cellSize = 25;
-const fillOpacity = 0.8;
+const cellSize = 25; // Fixed cell size
+const fillOpacity = 0.6;
+const tileOpacity = 0.5; // Default tile opacity
+const patternOpacity = 0.3; // Low opacity for patterns over tiles
 const pixelsPerFoot = 100;
 
 // State Variables
@@ -42,10 +38,10 @@ const designShape = {
   tileType: "standard",
   baseColor: "#CCCCCC",
   borderColor: "",
-  currentTileId: "tile1",
+  currentTileId: "tile1", // Default tile ID
 };
 
-// Painted Cells
+// Painted Cells (for tiles and colors)
 const paintedCells = [];
 
 const tileImages = {};
@@ -58,11 +54,10 @@ const layouts = [
   { id: "double-legged-rectangle", image: "./media/svg/layouts/layout4.svg" },
 ];
 
-// Patterns array with images (including custom ones)
 const patterns = [
   { id: "1", image: "./media/svg/patterns/nopattern.svg", name: "Pattern 1" },
   {
-    id: "1",
+    id: "2",
     image: "./media/svg/patterns/checkedpattern.svg",
     name: "Pattern 2",
   },
@@ -120,59 +115,35 @@ function createCheckerboardPattern(ctx) {
   return ctx.createPattern(patternCanvas, "repeat");
 }
 
-// Function to create a color checkerboard pattern
-function createColoredCheckerboardPattern(ctx, color) {
-  const patternCanvas = document.createElement("canvas");
-  patternCanvas.width = cellSize * 2;
-  patternCanvas.height = cellSize * 2;
-  const patternCtx = patternCanvas.getContext("2d");
-
-  patternCtx.fillStyle = color;
-  patternCtx.fillRect(0, 0, cellSize * 2, cellSize * 2);
-  patternCtx.fillStyle = color;
-  patternCtx.fillRect(0, 0, cellSize, cellSize);
-  patternCtx.fillRect(cellSize, cellSize, cellSize, cellSize);
-
-  return ctx.createPattern(patternCanvas, "repeat");
-}
-
-// Function to create the default grid pattern with a yellow inner square
+// Function to create the default grid pattern
 function createGridPattern(ctx) {
   const gridCount = 10;
   const canvasSize = cellSize * gridCount;
-
-  console.log("Creating grid pattern", cellSize, gridCount, canvasSize);
   const patternCanvas = document.createElement("canvas");
   patternCanvas.width = canvasSize;
   patternCanvas.height = canvasSize;
   const patternCtx = patternCanvas.getContext("2d");
 
-  // Fill the background with white
   patternCtx.fillStyle = "#FFFFFF";
   patternCtx.fillRect(0, 0, canvasSize, canvasSize);
 
-  // Draw light gray grid lines
   patternCtx.strokeStyle = "lightgray";
   patternCtx.lineWidth = 1;
   for (let i = 0; i <= gridCount; i++) {
-    // Vertical grid lines
     patternCtx.beginPath();
     patternCtx.moveTo(i * cellSize, 0);
     patternCtx.lineTo(i * cellSize, canvasSize);
     patternCtx.stroke();
 
-    // Horizontal grid lines
     patternCtx.beginPath();
     patternCtx.moveTo(0, i * cellSize);
     patternCtx.lineTo(canvasSize, i * cellSize);
     patternCtx.stroke();
   }
 
-  // Draw the thick red border around the entire grid
   const redBorderWidth = 25;
   patternCtx.strokeStyle = "red";
   patternCtx.lineWidth = redBorderWidth;
-  // Stroke rectangle is offset by half the border width
   patternCtx.strokeRect(
     redBorderWidth / 2,
     redBorderWidth / 2,
@@ -180,11 +151,9 @@ function createGridPattern(ctx) {
     canvasSize - redBorderWidth
   );
 
-  // Draw the bold yellow inner square (inset by two cells from each side)
   const yellowBorderWidth = 25;
   patternCtx.strokeStyle = "yellow";
   patternCtx.lineWidth = yellowBorderWidth;
-  // The inner square spans from the 3rd cell to the 8th cell (1-indexed)
   patternCtx.strokeRect(
     2 * cellSize + yellowBorderWidth / 2,
     2 * cellSize + yellowBorderWidth / 2,
@@ -195,91 +164,7 @@ function createGridPattern(ctx) {
   return ctx.createPattern(patternCanvas, "repeat");
 }
 
-// replacing the yellow inner square with the selected color.
-function createColoredGridPattern(ctx, color) {
-  const gridCount = 10;
-  const canvasSize = cellSize * gridCount;
-  const patternCanvas = document.createElement("canvas");
-  patternCanvas.width = canvasSize;
-  patternCanvas.height = canvasSize;
-  const patternCtx = patternCanvas.getContext("2d");
-
-  // White background
-  patternCtx.fillStyle = color;
-  patternCtx.fillRect(0, 0, canvasSize, canvasSize);
-
-  // Draw light gray grid lines
-  patternCtx.strokeStyle = "lightgray";
-  patternCtx.lineWidth = 1;
-  for (let i = 0; i <= gridCount; i++) {
-    // Vertical grid lines
-    patternCtx.beginPath();
-    patternCtx.moveTo(i * cellSize, 0);
-    patternCtx.lineTo(i * cellSize, canvasSize);
-    patternCtx.stroke();
-
-    // Horizontal grid lines
-    patternCtx.beginPath();
-    patternCtx.moveTo(0, i * cellSize);
-    patternCtx.lineTo(canvasSize, i * cellSize);
-    patternCtx.stroke();
-  }
-
-  // Draw the inner square with the selected color (replacing yellow)
-  const innerBorderWidth = 25;
-  patternCtx.strokeStyle = color;
-  patternCtx.lineWidth = innerBorderWidth;
-  patternCtx.strokeRect(
-    2 * cellSize + innerBorderWidth / 2,
-    2 * cellSize + innerBorderWidth / 2,
-    (gridCount - 4) * cellSize - innerBorderWidth,
-    (gridCount - 4) * cellSize - innerBorderWidth
-  );
-
-  return ctx.createPattern(patternCanvas, "repeat");
-}
-
-// Function to create a striped pattern
-function createStripedPattern(
-  ctx,
-  stripeColor = "#000000",
-  backgroundColor = "#FFFFFF"
-) {
-  const patternCanvas = document.createElement("canvas");
-  patternCanvas.width = cellSize;
-  patternCanvas.height = cellSize;
-  const patternCtx = patternCanvas.getContext("2d");
-
-  patternCtx.fillStyle = backgroundColor;
-  patternCtx.fillRect(0, 0, cellSize, cellSize);
-  patternCtx.fillStyle = stripeColor;
-  patternCtx.fillRect(0, 0, cellSize, cellSize / 2);
-
-  return ctx.createPattern(patternCanvas, "repeat");
-}
-
-// Function to create a dotted pattern
-function createDottedPattern(
-  ctx,
-  dotColor = "#000000",
-  backgroundColor = "#FFFFFF"
-) {
-  const patternCanvas = document.createElement("canvas");
-  patternCanvas.width = cellSize;
-  patternCanvas.height = cellSize;
-  const patternCtx = patternCanvas.getContext("2d");
-
-  patternCtx.fillStyle = backgroundColor;
-  patternCtx.fillRect(0, 0, cellSize, cellSize);
-  patternCtx.fillStyle = dotColor;
-  patternCtx.beginPath();
-  patternCtx.arc(cellSize / 2, cellSize / 2, cellSize / 4, 0, Math.PI * 2);
-  patternCtx.fill();
-
-  return ctx.createPattern(patternCanvas, "repeat");
-}
-
-// Define Initial Areas for Each Shape (unchanged)
+// Define Initial Areas for Each Shape
 function getInitialAreas(type) {
   const width = 400;
   const height = 300;
@@ -549,7 +434,7 @@ function getInitialAreas(type) {
   }
 }
 
-// Create Shape Path from Vertices (unchanged)
+// Create Shape Path from Vertices
 function getShapePath() {
   const path = new Path2D();
   const vertices = designShape.vertices;
@@ -563,7 +448,7 @@ function getShapePath() {
   return path;
 }
 
-// Get Area Path (unchanged)
+// Get Area Path
 function getAreaPath(area) {
   const path = new Path2D();
   const vertices = area.vertices;
@@ -579,17 +464,17 @@ function getAreaPath(area) {
   return path;
 }
 
-// Calculate midpoint between two points (unchanged)
+// Calculate midpoint between two points
 function getMidpoint(p1, p2) {
   return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
 }
 
-// Calculate segment length (unchanged)
+// Calculate segment length
 function getSegmentLength(p1, p2) {
   return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
 }
 
-// Format dimension as feet and inches (unchanged)
+// Format dimension as feet and inches
 function formatDimension(pixels) {
   const totalInches = (pixels / pixelsPerFoot) * 12;
   const feet = Math.floor(totalInches / 12);
@@ -597,7 +482,7 @@ function formatDimension(pixels) {
   return `${feet}'${inches}"`;
 }
 
-// Update Dimensions Display (unchanged)
+// Update Dimensions Display
 function updateDimensions() {
   document
     .querySelectorAll(".dimension-label")
@@ -650,7 +535,7 @@ function updateDimensions() {
   dimensionsDisplay.textContent = `Total Area: ${areaFt.toFixed(2)} ft²`;
 }
 
-// Update Area Dimensions (unchanged)
+// Update Area Dimensions
 function updateAreaDimensions() {
   areaDimensionsContainer.innerHTML = "";
   if (designShape.areas && designShape.areas.length > 0) {
@@ -680,25 +565,79 @@ function updateAreaDimensions() {
   }
 }
 
-// Draw Design Shape with Pattern
+// Function to apply tiles dynamically to the shape, adjusting for remaining space
+function applyTilesToShape() {
+  paintedCells.length = 0;
+  const path = getShapePath();
+
+  // Calculate bounding box
+  const xs = designShape.vertices.map((v) => v.x);
+  const ys = designShape.vertices.map((v) => v.y);
+  const minX = Math.floor(Math.min(...xs) / cellSize) * cellSize;
+  const maxX = Math.ceil(Math.max(...xs) / cellSize) * cellSize;
+  const minY = Math.floor(Math.min(...ys) / cellSize) * cellSize;
+  const maxY = Math.ceil(Math.max(...ys) / cellSize) * cellSize;
+
+  // Check multiple points per cell
+  for (let x = minX; x < maxX; x += cellSize) {
+    for (let y = minY; y < maxY; y += cellSize) {
+      const cellPoints = [
+        { x: x + cellSize / 2, y: y + cellSize / 2 }, // Center
+        { x: x, y: y }, // Top-left
+        { x: x + cellSize, y: y }, // Top-right
+        { x: x, y: y + cellSize }, // Bottom-left
+        { x: x + cellSize, y: y + cellSize }, // Bottom-right
+      ];
+
+      // Check if any point is inside the shape
+      const isInside = cellPoints.some((p) =>
+        ctx.isPointInPath(path, p.x, p.y)
+      );
+      if (isInside) {
+        paintedCells.push({ x, y, tileId: designShape.currentTileId });
+      }
+    }
+  }
+}
+
+// Draw Design Shape with Base Color
 function drawDesignShape() {
   ctx.save();
   const path = getShapePath();
   ctx.clip(path);
 
-  // Fill with base color first.
   ctx.fillStyle = designShape.baseColor;
   ctx.fill(path);
 
-  // If a code-based pattern is selected, use it.
-  if (designShape.pattern) {
-    ctx.fillStyle = designShape.pattern;
-    ctx.fill(path);
-  }
-  // Else, if an SVG image pattern is selected, draw it.
-  else if (designShape.patternImage) {
-    const img = designShape.patternImage;
-    // Calculate the bounding box of the shape.
+  ctx.restore();
+}
+
+// Draw Tiles and Painted Cells with Clipping
+function drawPaintedCells() {
+  ctx.save();
+  const path = getShapePath();
+  ctx.clip(path);
+
+  // Draw tiles
+  paintedCells.forEach((cell) => {
+    if (cell.tileId) {
+      const img = tileImages[cell.tileId];
+      if (img && img.complete) {
+        ctx.save();
+        ctx.globalAlpha = tileOpacity;
+        const cellPath = new Path2D();
+        cellPath.rect(cell.x, cell.y, cellSize, cellSize);
+        ctx.clip(cellPath);
+        ctx.drawImage(img, cell.x, cell.y, cellSize, cellSize);
+        ctx.restore();
+      }
+    }
+  });
+
+  // Draw patterns over tiles
+  if (designShape.patternImage) {
+    ctx.save();
+    ctx.globalAlpha = patternOpacity;
     const xs = designShape.vertices.map((v) => v.x);
     const ys = designShape.vertices.map((v) => v.y);
     const minX = Math.min(...xs);
@@ -707,13 +646,31 @@ function drawDesignShape() {
     const maxY = Math.max(...ys);
     const width = maxX - minX;
     const height = maxY - minY;
-    ctx.drawImage(img, minX, minY, width, height);
+    ctx.drawImage(designShape.patternImage, minX, minY, width, height);
+    ctx.restore();
+  } else if (designShape.pattern) {
+    ctx.save();
+    ctx.globalAlpha = patternOpacity;
+    ctx.fillStyle = designShape.pattern;
+    ctx.fill(path);
+    ctx.restore();
   }
+
+  // Draw colors on top of patterns
+  paintedCells.forEach((cell) => {
+    if (cell.color) {
+      ctx.save();
+      ctx.globalAlpha = fillOpacity;
+      ctx.fillStyle = cell.color;
+      ctx.fillRect(cell.x, cell.y, cellSize, cellSize);
+      ctx.restore();
+    }
+  });
 
   ctx.restore();
 }
 
-// Draw Grid (Clipped to Shape) (unchanged)
+// Draw Grid (Clipped to Shape)
 function drawGrid() {
   ctx.save();
   const path = getShapePath();
@@ -738,45 +695,11 @@ function drawGrid() {
   ctx.restore();
 }
 
-// Draw Painted Cells
-function drawPaintedCells() {
-  ctx.save();
-  const path = getShapePath();
-  ctx.clip(path);
-
-  paintedCells.forEach((cell) => {
-    // Draw tile if present
-    if (cell.tileId) {
-      const img = tileImages[cell.tileId];
-      if (img && img.complete) {
-        ctx.save();
-        ctx.globalAlpha = 0.5; // Tile opacity (adjustable)
-        ctx.drawImage(img, cell.x, cell.y, cellSize, cellSize);
-        ctx.restore();
-      }
-    }
-    // Draw color if present
-    if (cell.color) {
-      ctx.save();
-      if (cell.tileId) {
-        ctx.globalAlpha = 0.3; // Softer opacity when over a tile
-      } else {
-        ctx.globalAlpha = fillOpacity; // Normal opacity (e.g., 0.8) when no tile
-      }
-      ctx.fillStyle = cell.color;
-      ctx.fillRect(cell.x, cell.y, cellSize, cellSize);
-      ctx.restore();
-    }
-  });
-
-  ctx.restore();
-}
-
 // Draw Shape Border
 function drawShapeBorder() {
   ctx.save();
-  ctx.strokeStyle = designShape.borderColor; // Use dynamic border color
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = designShape.borderColor || "#0000"; // Default to black if not set
+  ctx.lineWidth = 10;
   const path = getShapePath();
   ctx.stroke(path);
   if (activeSidebarSection === "layouts" && designShape.areas) {
@@ -801,7 +724,7 @@ function redrawCanvas() {
   drawShapeBorder();
 }
 
-// Create and Update Reshape Handles (unchanged)
+// Create and Update Reshape Handles
 function createHandles() {
   document
     .querySelectorAll(
@@ -871,7 +794,7 @@ function updateHandles() {
   }
 }
 
-// Generate Layout Options (unchanged)
+// Generate Layout Options
 function generateLayoutOptions() {
   const layoutGrid = document.getElementById("layoutGrid");
   layoutGrid.innerHTML = "";
@@ -905,6 +828,7 @@ function generateLayoutOptions() {
         designShape.vertices = [...areas[0].vertices];
         designShape.areas = areas;
       }
+      applyTilesToShape(); // Apply tiles after layout change
       createHandles();
       redrawCanvas();
       updateDimensions();
@@ -912,6 +836,7 @@ function generateLayoutOptions() {
   });
 }
 
+// Generate Pattern Options
 function generatePatternOptions() {
   const patternGrid = document.getElementById("patternGrid");
   patternGrid.innerHTML = "";
@@ -940,17 +865,14 @@ function generatePatternOptions() {
       patternOption.classList.add("active");
 
       if (pattern.name === "Pattern 1") {
-        // Use the custom grid pattern.
         designShape.pattern = createGridPattern(ctx);
-        designShape.patternImage = null; // Disable SVG-based approach.
+        designShape.patternImage = null;
         designShape.activePatternName = pattern.name;
       } else if (pattern.name === "Pattern 2") {
-        // Use the code-based checkerboard pattern.
         designShape.pattern = createCheckerboardPattern(ctx);
-        designShape.patternImage = null; // Disable SVG-based approach.
+        designShape.patternImage = null;
         designShape.activePatternName = pattern.name;
       } else {
-        // For other patterns, use the SVG image.
         const img = await loadPatternImage(pattern.image);
         designShape.patternImage = img;
         designShape.pattern = null;
@@ -961,6 +883,7 @@ function generatePatternOptions() {
   });
 }
 
+// Generate Tile Type Options
 function generateTileTypeOptions() {
   const tileTypeGrid = document.getElementById("tileTypeGrid");
   tileTypeGrid.innerHTML = "";
@@ -990,12 +913,13 @@ function generateTileTypeOptions() {
         .forEach((opt) => opt.classList.remove("active"));
       tileTypeOption.classList.add("active");
       designShape.currentTileId = tileType.id;
-      fillAllWithTile();
+      applyTilesToShape(); // Apply new tile type
+      redrawCanvas();
     });
   });
 }
 
-// Generate Color Swatches (unchanged)
+// Generate Color Swatches
 function generateColorSwatches() {
   const colorSwatches = document.getElementById("colorSwatches");
   colorSwatches.innerHTML = "";
@@ -1018,7 +942,32 @@ function generateColorSwatches() {
   });
 }
 
-// Sidebar Interactions (unchanged)
+// Generate Edge Color Options
+function generateEdgeColorOptions() {
+  const edgeColorGrid = document.getElementById("edgeColorGrid");
+  edgeColorGrid.innerHTML = "";
+  edgeColors.forEach((color) => {
+    const colorSwatch = document.createElement("div");
+    colorSwatch.className = "edge-color-swatch";
+    colorSwatch.setAttribute("data-color", color.id);
+    colorSwatch.style.backgroundColor = color.value;
+    if (color.value === designShape.borderColor)
+      colorSwatch.classList.add("active");
+
+    edgeColorGrid.appendChild(colorSwatch);
+
+    colorSwatch.addEventListener("click", () => {
+      document
+        .querySelectorAll(".edge-color-swatch")
+        .forEach((swatch) => swatch.classList.remove("active"));
+      colorSwatch.classList.add("active");
+      designShape.borderColor = color.value;
+      redrawCanvas();
+    });
+  });
+}
+
+// Sidebar Interactions
 function setupSidebarInteractions() {
   sidebarItems.forEach((item) => {
     const header = item.querySelector(".sidebar-header");
@@ -1048,7 +997,7 @@ function setupSidebarInteractions() {
   });
 }
 
-// Update Active Step (unchanged)
+// Update Active Step
 function updateActiveStep(step) {
   sidebarItems.forEach((item) => {
     item.classList.remove("active");
@@ -1070,10 +1019,9 @@ function updateActiveStep(step) {
   activeSidebarSection = steps[step];
 }
 
-// Cell Painting Functionality
+// Cell Painting Functionality (Only for Colors)
 canvas.addEventListener("click", (e) => {
-  if (activeSidebarSection !== "colors" && activeSidebarSection !== "tileTypes")
-    return;
+  if (activeSidebarSection !== "colors") return; // Tiles are applied automatically, not via click
 
   const rect = canvas.getBoundingClientRect();
   const clickX = e.clientX - rect.left;
@@ -1092,22 +1040,18 @@ canvas.addEventListener("click", (e) => {
   if (existingCellIndex !== -1) {
     cell = paintedCells[existingCellIndex];
   } else {
-    cell = { x: cellX, y: cellY };
+    cell = { x: cellX, y: cellY, tileId: designShape.currentTileId }; // Include tile by default
     paintedCells.push(cell);
   }
 
-  if (activeSidebarSection === "tileTypes" && designShape.currentTileId) {
-    cell.tileId = designShape.currentTileId;
-    delete cell.color; // Remove color when applying a tile
-  } else if (activeSidebarSection === "colors") {
-    cell.color = paintColor; // Set color, keep tileId if it exists
-    // Do not delete cell.tileId
+  if (activeSidebarSection === "colors") {
+    cell.color = paintColor; // Apply color, keep tile
   }
 
   redrawCanvas();
 });
 
-// Handle Reshape Functionality (unchanged)
+// Handle Reshape Functionality
 canvasContainer.addEventListener("mousedown", (e) => {
   if (activeSidebarSection !== "layouts") return;
   if (e.target.classList.contains("reshape-handle")) {
@@ -1210,10 +1154,14 @@ document.addEventListener("mousemove", (e) => {
 });
 
 document.addEventListener("mouseup", () => {
+  if (activeHandle !== null) {
+    applyTilesToShape(); // Reapply tiles after reshaping
+    redrawCanvas();
+  }
   activeHandle = null;
 });
 
-// Navigation Buttons (unchanged)
+// Navigation Buttons
 document.querySelector(".next-btn").addEventListener("click", () => {
   if (currentStep < steps.length - 1) {
     currentStep++;
@@ -1269,22 +1217,9 @@ function resizeCanvas() {
         });
       }
 
-      // Recompute the pattern after resizing
-      if (designShape.pattern) {
-        const activePattern = patterns.find((p) =>
-          document
-            .querySelector(`.pattern-option[data-pattern="${p.id}"]`)
-            ?.classList.contains("active")
-        );
-        if (activePattern) {
-          createSVGPattern(activePattern.image, cellSize).then((pattern) => {
-            designShape.pattern = pattern;
-            redrawCanvas();
-          });
-        }
-      }
+      applyTilesToShape(); // Reapply tiles after resize
     } else {
-      designShape.vertices = getInitialVertices(designShape.type);
+      designShape.vertices = getInitialAreas(designShape.type)[0].vertices;
     }
 
     createHandles();
@@ -1294,48 +1229,6 @@ function resizeCanvas() {
 }
 
 window.addEventListener("resize", resizeCanvas);
-
-// edges function
-function generateEdgeColorOptions() {
-  const edgeColorGrid = document.getElementById("edgeColorGrid");
-  edgeColorGrid.innerHTML = ""; // Clear existing content
-  edgeColors.forEach((color) => {
-    const colorSwatch = document.createElement("div");
-    colorSwatch.className = "edge-color-swatch";
-    colorSwatch.setAttribute("data-color", color.id);
-    colorSwatch.style.backgroundColor = color.value;
-    // Highlight the swatch if it matches the current border color
-    if (color.value === designShape.borderColor)
-      colorSwatch.classList.add("active");
-
-    edgeColorGrid.appendChild(colorSwatch);
-
-    colorSwatch.addEventListener("click", () => {
-      // Remove active class from all swatches
-      document
-        .querySelectorAll(".edge-color-swatch")
-        .forEach((swatch) => swatch.classList.remove("active"));
-      colorSwatch.classList.add("active"); // Highlight selected swatch
-      designShape.borderColor = color.value; // Update border color
-      redrawCanvas(); // Redraw canvas with new border color
-    });
-  });
-}
-
-// tile function
-function fillAllWithTile() {
-  if (!designShape.currentTileId) return;
-  paintedCells.length = 0; // Clear existing cells
-  const path = getShapePath();
-  for (let x = 0; x < canvas.width; x += cellSize) {
-    for (let y = 0; y < canvas.height; y += cellSize) {
-      if (ctx.isPointInPath(path, x + cellSize / 2, y + cellSize / 2)) {
-        paintedCells.push({ x, y, tileId: designShape.currentTileId });
-      }
-    }
-  }
-  redrawCanvas();
-}
 
 // Initialize Application
 function init() {
@@ -1351,6 +1244,7 @@ function init() {
     designShape.vertices = [...areas[0].vertices];
     designShape.areas = areas;
   }
+  applyTilesToShape(); // Apply tiles on initial load
   generateLayoutOptions();
   generatePatternOptions();
   generateTileTypeOptions();
