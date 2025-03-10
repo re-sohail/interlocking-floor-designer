@@ -12,9 +12,9 @@ const sidebarItems = document.querySelectorAll(".sidebar-item");
 
 // Settings
 const cellSize = 25; // Fixed cell size
-const fillOpacity = 0.6;
+const fillOpacity = 0.7;
 const tileOpacity = 0.5; // Default tile opacity
-const patternOpacity = 0.3; // Low opacity for patterns over tiles
+const patternOpacity = 0.2; // Low opacity for patterns over tiles
 const pixelsPerFoot = 100;
 
 // State Variables
@@ -1260,4 +1260,4 @@ function init() {
 
 init();
 
-window.addEventListener("load", init);
+// window.addEventListener("load", init);
