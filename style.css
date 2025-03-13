@@ -165,6 +165,10 @@ body {
   transition: background-color 0.2s;
 }
 
+.pattern-option {
+  padding: 2px;
+}
+
 .layout-option.active,
 .pattern-option.active,
 .tile-type-option.active {
@@ -178,7 +182,6 @@ body {
   height: 60px;
   object-fit: contain;
   object-position: center;
-  border: 1px solid #ccc;
 }
 
 .layout-label,
@@ -357,10 +360,10 @@ canvas {
   transition: all 0.2s ease;
 }
 
-.pattern-option:hover {
+/* .pattern-option:hover {
   transform: scale(1.05);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
+} */
 
 .pattern-option.active {
   border-color: #ab977c;

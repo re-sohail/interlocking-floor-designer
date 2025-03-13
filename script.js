@@ -4,12 +4,6 @@ const ctx = canvas.getContext("2d");
 const canvasContainer = document.getElementById("canvasContainer");
 const areaDimensionsContainer = document.getElementById("areaDimensions");
 
-// Dimension Labels
-const topDim = document.querySelector(".top-dim");
-const rightDim = document.querySelector(".right-dim");
-const bottomDim = document.querySelector(".bottom-dim");
-const leftDim = document.querySelector(".left-dim");
-
 // Controls
 const dimensionsDisplay = document.getElementById("dimensions");
 
@@ -17,8 +11,10 @@ const dimensionsDisplay = document.getElementById("dimensions");
 const sidebarItems = document.querySelectorAll(".sidebar-item");
 
 // Settings
-const cellSize = 30;
+const cellSize = 25; // Fixed cell size
 const fillOpacity = 0.8;
+const tileOpacity = 0.4; // Default tile opacity
+const patternOpacity = 0.4; // Low opacity for patterns over tiles
 const pixelsPerFoot = 100;
 
 // State Variables
@@ -38,13 +34,17 @@ const designShape = {
   type: "rectangle",
   vertices: [],
   areas: [],
-  pattern: null, // Pattern applied to the entire shape
+  patternImage: null,
   tileType: "standard",
-  baseColor: "#000000",
+  baseColor: "#CCCCCC",
+  borderColor: "",
+  currentTileId: "tile1", // Default tile ID
 };
 
-// Painted Cells
+// Painted Cells (for tiles and colors)
 const paintedCells = [];
+
+const tileImages = {};
 
 // Data Arrays
 const layouts = [
@@ -54,61 +54,52 @@ const layouts = [
   { id: "double-legged-rectangle", image: "./media/svg/layouts/layout4.svg" },
 ];
 
-// Patterns array with SVG images (including custom ones)
 const patterns = [
   { id: "1", image: "./media/svg/patterns/patterns1.svg", name: "Pattern 1" },
-  { id: "2", image: "./media/svg/patterns/patterns2.svg", name: "Pattern 2" },
-  { id: "3", image: "./media/svg/patterns/patterns3.svg", name: "Pattern 3" },
-  { id: "4", image: "./media/svg/patterns/patterns4.svg", name: "Pattern 4" },
-  { id: "5", image: "./media/svg/patterns/patterns5.svg", name: "Pattern 5" },
-  { id: "6", image: "./media/svg/patterns/patterns6.svg", name: "Pattern 6" },
   {
-    id: "custom1",
-    image: "./media/svg/patterns/custom_pattern1.svg",
-    name: "Custom 1",
+    id: "2",
+    image: "./media/svg/patterns/patterns2.svg",
+    name: "Pattern 2",
   },
   {
-    id: "custom2",
-    image: "./media/svg/patterns/custom_pattern2.svg",
-    name: "Custom 2",
+    id: "3",
+    image: "./media/svg/patterns/patterns3.svg",
+    name: "Pattern 3",
+  },
+  {
+    id: "4",
+    image: "./media/svg/patterns/patterns4.svg",
+    name: "Pattern 4",
+  },
+  {
+    id: "5",
+    image: "./media/svg/patterns/patterns5.svg",
+    name: "Pattern 5",
+  },
+  {
+    id: "6",
+    image: "./media/svg/patterns/patterns6.svg",
+    name: "Pattern 6",
   },
 ];
 
 const tileTypes = [
-  {
-    id: "standard",
-    name: "Standard Tile",
-    image: "/placeholder.svg?height=60&width=80",
-  },
-  {
-    id: "premium",
-    name: "Premium Tile",
-    image: "/placeholder.svg?height=60&width=80",
-  },
-  {
-    id: "ceramic",
-    name: "Ceramic Tile",
-    image: "/placeholder.svg?height=60&width=80",
-  },
-  {
-    id: "porcelain",
-    name: "Porcelain Tile",
-    image: "/placeholder.svg?height=60&width=80",
-  },
-  {
-    id: "vinyl",
-    name: "Vinyl Tile",
-    image: "/placeholder.svg?height=60&width=80",
-  },
+  { id: "tile1", name: "Tile 1", image: "./media/img/tile.jpeg" },
+];
+
+const edgeColors = [
+  // { id: "black", value: "#000000", name: "Black" },
+  // { id: "red", value: "#ff0000", name: "Red" },
+  { id: "gray", value: "#CCCCCC", name: "Gray" },
 ];
 
 const colors = [
   { id: "red", value: "#ff0000", name: "Red" },
-  { id: "blue", value: "#0000ff", name: "Blue" },
-  { id: "green", value: "#008000", name: "Green" },
-  { id: "purple", value: "#800080", name: "Purple" },
   { id: "black", value: "#000000", name: "Black" },
+  { id: "blue", value: "#0000ff", name: "Blue" },
   { id: "gray", value: "#808080", name: "Gray" },
+  // { id: "green", value: "#008000", name: "Green" },
+  // { id: "purple", value: "#800080", name: "Purple" },
 ];
 
 // Utility: Convert Hex to RGBA
@@ -129,18 +120,201 @@ function loadPatternImage(imageUrl) {
   });
 }
 
-// Create a repeating pattern from an SVG image
-async function createSVGPattern(imageUrl, patternSize = cellSize) {
-  const img = await loadPatternImage(imageUrl);
-  const tempCanvas = document.createElement("canvas");
-  tempCanvas.width = patternSize;
-  tempCanvas.height = patternSize;
-  const tempCtx = tempCanvas.getContext("2d");
-  tempCtx.drawImage(img, 0, 0, patternSize, patternSize);
-  return ctx.createPattern(tempCanvas, "repeat");
+// Patterns
+function createPattern1(ctx) {
+  const rows = 10;
+  const cols = 10;
+  const patternCanvas = document.createElement("canvas");
+  patternCanvas.width = cellSize * cols;
+  patternCanvas.height = cellSize * rows;
+  const pCtx = patternCanvas.getContext("2d");
+
+  // Fill every cell with the empty cell color "#CCCCCC"
+  for (let i = 0; i < rows; i++) {
+    for (let j = 0; j < cols; j++) {
+      pCtx.fillStyle = "#CCCCCC";
+      pCtx.fillRect(j * cellSize, i * cellSize, cellSize, cellSize);
+    }
+  }
+
+  // Create and return the repeating pattern
+  return ctx.createPattern(patternCanvas, "repeat");
 }
 
-// Define Initial Areas for Each Shape (unchanged)
+function createPattern2(ctx) {
+  const patternCanvas = document.createElement("canvas");
+  patternCanvas.width = cellSize * 2;
+  patternCanvas.height = cellSize * 2;
+  const patternCtx = patternCanvas.getContext("2d");
+
+  patternCtx.fillStyle = "#CCCCCC";
+  patternCtx.fillRect(0, 0, cellSize * 2, cellSize * 2);
+  patternCtx.fillStyle = "black";
+  patternCtx.fillRect(0, 0, cellSize, cellSize);
+  patternCtx.fillRect(cellSize, cellSize, cellSize, cellSize);
+
+  return ctx.createPattern(patternCanvas, "repeat");
+}
+
+function createPattern3(ctx) {
+  // Example: 12 rows x 16 columns
+  const rows = 12;
+  const cols = 16;
+  const patternCanvas = document.createElement("canvas");
+  patternCanvas.width = cellSize * cols;
+  patternCanvas.height = cellSize * rows;
+  const patternCtx = patternCanvas.getContext("2d");
+
+  // Loop through each cell in the grid
+  for (let i = 1; i <= rows; i++) {
+    for (let j = 1; j <= cols; j++) {
+      let fillColor;
+
+      // Outer ring (top row, bottom row, left column, right column)
+      if (i === 1 || i === rows || j === 1 || j === cols) {
+        fillColor = "black";
+      }
+      // Inner ring (second row, second-last row, second column, second-last column)
+      else if (i === 2 || i === rows - 1 || j === 2 || j === cols - 1) {
+        fillColor = "red";
+      }
+      // Everything else in the center
+      else {
+        fillColor = "#CCCCCC";
+      }
+
+      patternCtx.fillStyle = fillColor;
+      patternCtx.fillRect(
+        (j - 1) * cellSize,
+        (i - 1) * cellSize,
+        cellSize,
+        cellSize
+      );
+    }
+  }
+
+  // Return a repeating pattern
+  return ctx.createPattern(patternCanvas, "repeat");
+}
+
+function createPattern4(ctx) {
+  const rows = 12; // number of rows in our grid pattern
+  const cols = 16; // number of columns in our grid pattern
+  const patternCanvas = document.createElement("canvas");
+  patternCanvas.width = cellSize * cols;
+  patternCanvas.height = cellSize * rows;
+  const pCtx = patternCanvas.getContext("2d");
+
+  // Loop through each cell in the grid
+  for (let i = 1; i <= rows; i++) {
+    for (let j = 1; j <= cols; j++) {
+      let fillColor;
+      if (i === 1 || i === rows) {
+        // First and last row: empty cell color (#CCCCCC)
+        fillColor = "#CCCCCC";
+      } else if (i === 2 || i === rows - 1) {
+        // Second and second-to-last row:
+        // first and last columns remain empty, rest become hard cells (yellow)
+        fillColor = j === 1 || j === cols ? "#CCCCCC" : "black";
+      } else {
+        // Rows 3 to 8:
+        // first and last columns are empty,
+        // second and second-to-last are hard cells,
+        // the rest remain empty
+        if (j === 1 || j === cols) {
+          fillColor = "#CCCCCC";
+        } else if (j === 2 || j === cols - 1) {
+          fillColor = "black";
+        } else {
+          fillColor = "#CCCCCC";
+        }
+      }
+      pCtx.fillStyle = fillColor;
+      pCtx.fillRect((j - 1) * cellSize, (i - 1) * cellSize, cellSize, cellSize);
+    }
+  }
+  return ctx.createPattern(patternCanvas, "repeat");
+}
+
+function createPattern5(ctx) {
+  const rows = 12; // number of rows in our grid pattern
+  const cols = 16; // number of columns in our grid pattern
+  const patternCanvas = document.createElement("canvas");
+  patternCanvas.width = cellSize * cols;
+  patternCanvas.height = cellSize * rows;
+  const pCtx = patternCanvas.getContext("2d");
+
+  // Loop through each cell in the grid
+  for (let i = 1; i <= rows; i++) {
+    for (let j = 1; j <= cols; j++) {
+      let fillColor;
+      if (i === 1 || i === rows) {
+        // First and last row: empty cell color (#CCCCCC)
+        fillColor = "red";
+      } else if (i === 2 || i === rows - 1) {
+        // Second and second-to-last row:
+        // first and last columns remain empty, rest become hard cells (yellow)
+        fillColor = j === 1 || j === cols ? "red" : "black";
+      } else {
+        // Rows 3 to 8:
+        // first and last columns are empty,
+        // second and second-to-last are hard cells,
+        // the rest remain empty
+        if (j === 1 || j === cols) {
+          fillColor = "red";
+        } else if (j === 2 || j === cols - 1) {
+          fillColor = "black";
+        } else {
+          fillColor = "black";
+        }
+      }
+      pCtx.fillStyle = fillColor;
+      pCtx.fillRect((j - 1) * cellSize, (i - 1) * cellSize, cellSize, cellSize);
+    }
+  }
+  return ctx.createPattern(patternCanvas, "repeat");
+}
+
+function createPattern6(ctx) {
+  const rows = 12; // number of rows in our grid pattern
+  const cols = 16; // number of columns in our grid pattern
+  const patternCanvas = document.createElement("canvas");
+  patternCanvas.width = cellSize * cols;
+  patternCanvas.height = cellSize * rows;
+  const pCtx = patternCanvas.getContext("2d");
+
+  // Loop through each cell in the grid
+  for (let i = 1; i <= rows; i++) {
+    for (let j = 1; j <= cols; j++) {
+      let fillColor;
+      if (i === 1 || i === rows) {
+        // First and last row: empty cell color (#CCCCCC)
+        fillColor = "black";
+      } else if (i === 2 || i === rows - 1) {
+        // Second and second-to-last row:
+        // first and last columns remain empty, rest become hard cells (yellow)
+        fillColor = j === 1 || j === cols ? "black" : "red";
+      } else {
+        // Rows 3 to 8:
+        // first and last columns are empty,
+        // second and second-to-last are hard cells,
+        // the rest remain empty
+        if (j === 1 || j === cols) {
+          fillColor = "black";
+        } else if (j === 2 || j === cols - 1) {
+          fillColor = "red";
+        } else {
+          fillColor = "#CCCCCC";
+        }
+      }
+      pCtx.fillStyle = fillColor;
+      pCtx.fillRect((j - 1) * cellSize, (i - 1) * cellSize, cellSize, cellSize);
+    }
+  }
+  return ctx.createPattern(patternCanvas, "repeat");
+}
+
+// Define Initial Areas for Each Shape
 function getInitialAreas(type) {
   const width = 400;
   const height = 300;
@@ -410,7 +584,7 @@ function getInitialAreas(type) {
   }
 }
 
-// Create Shape Path from Vertices (unchanged)
+// Create Shape Path from Vertices
 function getShapePath() {
   const path = new Path2D();
   const vertices = designShape.vertices;
@@ -424,7 +598,7 @@ function getShapePath() {
   return path;
 }
 
-// Get Area Path (unchanged)
+// Get Area Path
 function getAreaPath(area) {
   const path = new Path2D();
   const vertices = area.vertices;
@@ -440,17 +614,17 @@ function getAreaPath(area) {
   return path;
 }
 
-// Calculate midpoint between two points (unchanged)
+// Calculate midpoint between two points
 function getMidpoint(p1, p2) {
   return { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
 }
 
-// Calculate segment length (unchanged)
+// Calculate segment length
 function getSegmentLength(p1, p2) {
   return Math.sqrt(Math.pow(p2.x - p1.x, 2) + Math.pow(p2.y - p1.y, 2));
 }
 
-// Format dimension as feet and inches (unchanged)
+// Format dimension as feet and inches
 function formatDimension(pixels) {
   const totalInches = (pixels / pixelsPerFoot) * 12;
   const feet = Math.floor(totalInches / 12);
@@ -458,7 +632,7 @@ function formatDimension(pixels) {
   return `${feet}'${inches}"`;
 }
 
-// Update Dimensions Display (unchanged)
+// Update Dimensions Display
 function updateDimensions() {
   document
     .querySelectorAll(".dimension-label")
@@ -511,7 +685,7 @@ function updateDimensions() {
   dimensionsDisplay.textContent = `Total Area: ${areaFt.toFixed(2)} ft²`;
 }
 
-// Update Area Dimensions (unchanged)
+// Update Area Dimensions
 function updateAreaDimensions() {
   areaDimensionsContainer.innerHTML = "";
   if (designShape.areas && designShape.areas.length > 0) {
@@ -541,26 +715,154 @@ function updateAreaDimensions() {
   }
 }
 
-// Draw Design Shape with Pattern
+// Function to apply tiles dynamically to the shape, adjusting for remaining space
+function applyTilesToShape() {
+  paintedCells.length = 0;
+  const path = getShapePath();
+
+  // Calculate bounding box
+  const xs = designShape.vertices.map((v) => v.x);
+  const ys = designShape.vertices.map((v) => v.y);
+  const minX = Math.floor(Math.min(...xs) / cellSize) * cellSize;
+  const maxX = Math.ceil(Math.max(...xs) / cellSize) * cellSize;
+  const minY = Math.floor(Math.min(...ys) / cellSize) * cellSize;
+  const maxY = Math.ceil(Math.max(...ys) / cellSize) * cellSize;
+
+  // Check multiple points per cell
+  for (let x = minX; x < maxX; x += cellSize) {
+    for (let y = minY; y < maxY; y += cellSize) {
+      const cellPoints = [
+        { x: x + cellSize / 2, y: y + cellSize / 2 }, // Center
+        { x: x, y: y }, // Top-left
+        { x: x + cellSize, y: y }, // Top-right
+        { x: x, y: y + cellSize }, // Bottom-left
+        { x: x + cellSize, y: y + cellSize }, // Bottom-right
+      ];
+
+      // Check if any point is inside the shape
+      const isInside = cellPoints.some((p) =>
+        ctx.isPointInPath(path, p.x, p.y)
+      );
+      if (isInside) {
+        paintedCells.push({ x, y, tileId: designShape.currentTileId });
+      }
+    }
+  }
+}
+
+// Draw Design Shape with Base Color
 function drawDesignShape() {
   ctx.save();
   const path = getShapePath();
   ctx.clip(path);
 
-  // Fill with base color first
   ctx.fillStyle = designShape.baseColor;
   ctx.fill(path);
-
-  // Apply pattern if selected
-  if (designShape.pattern) {
-    ctx.fillStyle = designShape.pattern;
-    ctx.fill(path);
-  }
 
   ctx.restore();
 }
 
-// Draw Grid (Clipped to Shape) (unchanged)
+// Draw Tiles and Painted Cells with Clipping
+function drawPaintedCells() {
+  ctx.save();
+  const path = getShapePath();
+  ctx.clip(path);
+
+  // Draw tiles
+  paintedCells.forEach((cell) => {
+    if (cell.tileId) {
+      const img = tileImages[cell.tileId];
+      if (img && img.complete) {
+        ctx.save();
+        ctx.globalAlpha = tileOpacity;
+        const cellPath = new Path2D();
+        cellPath.rect(cell.x, cell.y, cellSize, cellSize);
+        ctx.clip(cellPath);
+        ctx.drawImage(img, cell.x, cell.y, cellSize, cellSize);
+        ctx.restore();
+      }
+    }
+  });
+
+  // Draw patterns over tiles
+  if (designShape.patternImage) {
+    ctx.save();
+    ctx.globalAlpha = patternOpacity;
+    const xs = designShape.vertices.map((v) => v.x);
+    const ys = designShape.vertices.map((v) => v.y);
+    const minX = Math.min(...xs);
+    const maxX = Math.max(...xs);
+    const minY = Math.min(...ys);
+    const maxY = Math.max(...ys);
+    const width = maxX - minX;
+    const height = maxY - minY;
+    ctx.drawImage(designShape.patternImage, minX, minY, width, height);
+    ctx.restore();
+  } else if (designShape.pattern) {
+    ctx.save();
+    ctx.globalAlpha = patternOpacity;
+    ctx.clip(path);
+
+    // For all canvas-based patterns, anchor the pattern using the stored offset (if available)
+    if (
+      typeof designShape.pattern.setTransform === "function" &&
+      designShape.initialPatternOffset
+    ) {
+      designShape.pattern.setTransform(
+        new DOMMatrix().translate(
+          designShape.initialPatternOffset.x,
+          designShape.initialPatternOffset.y
+        )
+      );
+    }
+
+    ctx.fillStyle = designShape.pattern;
+    ctx.fill(path);
+    ctx.restore();
+  }
+
+  // } else if (designShape.pattern) {
+  //   ctx.save();
+  //   ctx.globalAlpha = patternOpacity;
+
+  //   // 1) Clip to the shape
+  //   ctx.clip(path);
+
+  //   // 2) Calculate the bounding box of the shape
+  //   const xs = designShape.vertices.map((v) => v.x);
+  //   const ys = designShape.vertices.map((v) => v.y);
+  //   const minX = Math.min(...xs);
+  //   const maxX = Math.max(...xs);
+  //   const minY = Math.min(...ys);
+  //   const maxY = Math.max(...ys);
+  //   const width = maxX - minX;
+  //   const height = maxY - minY;
+
+  //   // 3) Translate the context so the pattern starts at (minX, minY)
+  //   ctx.translate(minX, minY);
+
+  //   // 4) Fill the bounding box with the repeating pattern
+  //   ctx.fillStyle = designShape.pattern;
+  //   ctx.fillRect(0, 0, width, height);
+
+  //   ctx.restore();
+  // }
+
+  // Draw colors on top of patterns
+  paintedCells.forEach((cell) => {
+    if (cell.color) {
+      ctx.save();
+      ctx.globalAlpha = fillOpacity;
+      ctx.fillStyle = cell.color;
+      ctx.fillRect(cell.x, cell.y, cellSize, cellSize);
+      ctx.restore();
+    }
+  });
+
+  ctx.restore();
+}
+
+// Draw Grid (Clipped to Shape)
 function drawGrid() {
   ctx.save();
   const path = getShapePath();
@@ -585,38 +887,11 @@ function drawGrid() {
   ctx.restore();
 }
 
-// Draw Painted Cells
-function drawPaintedCells() {
-  ctx.save();
-  const path = getShapePath();
-  ctx.clip(path);
-
-  paintedCells.forEach((cell) => {
-    // Draw the pattern if the cell is within a patterned area
-    if (designShape.pattern && !cell.color) {
-      const tempCanvas = document.createElement("canvas");
-      tempCanvas.width = cellSize;
-      tempCanvas.height = cellSize;
-      const tempCtx = tempCanvas.getContext("2d");
-      tempCtx.fillStyle = designShape.pattern;
-      tempCtx.fillRect(0, 0, cellSize, cellSize);
-      ctx.drawImage(tempCanvas, cell.x, cell.y);
-    }
-    // Overlay with painted color if present
-    if (cell.color) {
-      ctx.fillStyle = hexToRgba(cell.color, fillOpacity);
-      ctx.fillRect(cell.x, cell.y, cellSize, cellSize);
-    }
-  });
-
-  ctx.restore();
-}
-
-// Draw Shape Border (unchanged)
+// Draw Shape Border
 function drawShapeBorder() {
   ctx.save();
-  ctx.strokeStyle = "#666666";
-  ctx.lineWidth = 3;
+  ctx.strokeStyle = designShape.borderColor || "#0000"; // Default to black if not set
+  ctx.lineWidth = 10;
   const path = getShapePath();
   ctx.stroke(path);
   if (activeSidebarSection === "layouts" && designShape.areas) {
@@ -641,7 +916,7 @@ function redrawCanvas() {
   drawShapeBorder();
 }
 
-// Create and Update Reshape Handles (unchanged)
+// Create and Update Reshape Handles
 function createHandles() {
   document
     .querySelectorAll(
@@ -711,7 +986,7 @@ function updateHandles() {
   }
 }
 
-// Generate Layout Options (unchanged)
+// Generate Layout Options
 function generateLayoutOptions() {
   const layoutGrid = document.getElementById("layoutGrid");
   layoutGrid.innerHTML = "";
@@ -745,6 +1020,7 @@ function generateLayoutOptions() {
         designShape.vertices = [...areas[0].vertices];
         designShape.areas = areas;
       }
+      applyTilesToShape(); // Apply tiles after layout change
       createHandles();
       redrawCanvas();
       updateDimensions();
@@ -753,6 +1029,75 @@ function generateLayoutOptions() {
 }
 
 // Generate Pattern Options
+// function generatePatternOptions() {
+//   const patternGrid = document.getElementById("patternGrid");
+//   patternGrid.innerHTML = "";
+//   patterns.forEach((pattern) => {
+//     const patternOption = document.createElement("div");
+//     patternOption.className = "pattern-option";
+//     patternOption.setAttribute("data-pattern", pattern.id);
+
+//     const patternImage = document.createElement("img");
+//     patternImage.className = "pattern-image";
+//     patternImage.src = pattern.image;
+//     patternImage.alt = pattern.name;
+
+//     const patternLabel = document.createElement("span");
+//     patternLabel.className = "pattern-label";
+//     patternLabel.textContent = pattern.name;
+
+//     patternOption.appendChild(patternImage);
+//     patternOption.appendChild(patternLabel);
+//     patternGrid.appendChild(patternOption);
+
+//     patternOption.addEventListener("click", async () => {
+//       document
+//         .querySelectorAll(".pattern-option")
+//         .forEach((opt) => opt.classList.remove("active"));
+//       patternOption.classList.add("active");
+
+//       if (pattern.name === "Pattern 1") {
+//         designShape.pattern = createPattern1(ctx);
+//         designShape.patternImage = null;
+//         designShape.activePatternName = pattern.name;
+//       } else if (pattern.name === "Pattern 2") {
+//         designShape.pattern = createPattern2(ctx);
+//         designShape.patternImage = null;
+//         designShape.activePatternName = pattern.name;
+//       } else if (pattern.name === "Pattern 3") {
+//         designShape.pattern = createPattern3(ctx);
+//         designShape.patternImage = null;
+//         designShape.activePatternName = pattern.name;
+
+//         const xs = designShape.vertices.map((v) => v.x);
+//         const ys = designShape.vertices.map((v) => v.y);
+//         designShape.initialPatternOffset = {
+//           x: Math.min(...xs),
+//           y: Math.min(...ys),
+//         };
+//       } else if (pattern.name === "Pattern 4") {
+//         designShape.pattern = createPattern4(ctx);
+//         designShape.patternImage = null;
+//         designShape.activePatternName = pattern.name;
+//       } else if (pattern.name === "Pattern 5") {
+//         designShape.pattern = createPattern5(ctx);
+//         designShape.patternImage = null;
+//         designShape.activePatternName = pattern.name;
+//       } else if (pattern.name === "Pattern 6") {
+//         designShape.pattern = createPattern6(ctx);
+//         designShape.patternImage = null;
+//         designShape.activePatternName = pattern.name;
+//       } else {
+//         const img = await loadPatternImage(pattern.image);
+//         designShape.patternImage = img;
+//         designShape.pattern = null;
+//         designShape.activePatternName = pattern.name;
+//       }
+//       redrawCanvas();
+//     });
+//   });
+// }
+
 function generatePatternOptions() {
   const patternGrid = document.getElementById("patternGrid");
   patternGrid.innerHTML = "";
@@ -779,14 +1124,57 @@ function generatePatternOptions() {
         .querySelectorAll(".pattern-option")
         .forEach((opt) => opt.classList.remove("active"));
       patternOption.classList.add("active");
-      const patternObj = await createSVGPattern(pattern.image, cellSize);
-      designShape.pattern = patternObj;
+
+      if (pattern.name === "Pattern 1") {
+        designShape.pattern = createPattern1(ctx);
+        designShape.patternImage = null;
+        designShape.activePatternName = pattern.name;
+      } else if (pattern.name === "Pattern 2") {
+        designShape.pattern = createPattern2(ctx);
+        designShape.patternImage = null;
+        designShape.activePatternName = pattern.name;
+      } else if (pattern.name === "Pattern 3") {
+        designShape.pattern = createPattern3(ctx);
+        designShape.patternImage = null;
+        designShape.activePatternName = pattern.name;
+      } else if (pattern.name === "Pattern 4") {
+        designShape.pattern = createPattern4(ctx);
+        designShape.patternImage = null;
+        designShape.activePatternName = pattern.name;
+      } else if (pattern.name === "Pattern 5") {
+        designShape.pattern = createPattern5(ctx);
+        designShape.patternImage = null;
+        designShape.activePatternName = pattern.name;
+      } else if (pattern.name === "Pattern 6") {
+        designShape.pattern = createPattern6(ctx);
+        designShape.patternImage = null;
+        designShape.activePatternName = pattern.name;
+      } else {
+        const img = await loadPatternImage(pattern.image);
+        designShape.patternImage = img;
+        designShape.pattern = null;
+        designShape.activePatternName = pattern.name;
+      }
+
+      // For all non-image patterns, store the initial offset (anchor)
+      if (
+        designShape.pattern &&
+        typeof designShape.pattern.setTransform === "function"
+      ) {
+        const xs = designShape.vertices.map((v) => v.x);
+        const ys = designShape.vertices.map((v) => v.y);
+        designShape.initialPatternOffset = {
+          x: Math.min(...xs),
+          y: Math.min(...ys),
+        };
+      }
+
       redrawCanvas();
     });
   });
 }
 
-// Generate Tile Type Options (unchanged)
+// Generate Tile Type Options
 function generateTileTypeOptions() {
   const tileTypeGrid = document.getElementById("tileTypeGrid");
   tileTypeGrid.innerHTML = "";
@@ -794,7 +1182,7 @@ function generateTileTypeOptions() {
     const tileTypeOption = document.createElement("div");
     tileTypeOption.className = "tile-type-option";
     tileTypeOption.setAttribute("data-tile-type", tileType.id);
-    if (tileType.id === designShape.tileType)
+    if (tileType.id === designShape.currentTileId)
       tileTypeOption.classList.add("active");
 
     const tileTypeImage = document.createElement("img");
@@ -815,13 +1203,14 @@ function generateTileTypeOptions() {
         .querySelectorAll(".tile-type-option")
         .forEach((opt) => opt.classList.remove("active"));
       tileTypeOption.classList.add("active");
-      designShape.tileType = tileType.id;
+      designShape.currentTileId = tileType.id;
+      applyTilesToShape(); // Apply new tile type
       redrawCanvas();
     });
   });
 }
 
-// Generate Color Swatches (unchanged)
+// Generate Color Swatches
 function generateColorSwatches() {
   const colorSwatches = document.getElementById("colorSwatches");
   colorSwatches.innerHTML = "";
@@ -844,7 +1233,32 @@ function generateColorSwatches() {
   });
 }
 
-// Sidebar Interactions (unchanged)
+// Generate Edge Color Options
+function generateEdgeColorOptions() {
+  const edgeColorGrid = document.getElementById("edgeColorGrid");
+  edgeColorGrid.innerHTML = "";
+  edgeColors.forEach((color) => {
+    const colorSwatch = document.createElement("div");
+    colorSwatch.className = "edge-color-swatch";
+    colorSwatch.setAttribute("data-color", color.id);
+    colorSwatch.style.backgroundColor = color.value;
+    if (color.value === designShape.borderColor)
+      colorSwatch.classList.add("active");
+
+    edgeColorGrid.appendChild(colorSwatch);
+
+    colorSwatch.addEventListener("click", () => {
+      document
+        .querySelectorAll(".edge-color-swatch")
+        .forEach((swatch) => swatch.classList.remove("active"));
+      colorSwatch.classList.add("active");
+      designShape.borderColor = color.value;
+      redrawCanvas();
+    });
+  });
+}
+
+// Sidebar Interactions
 function setupSidebarInteractions() {
   sidebarItems.forEach((item) => {
     const header = item.querySelector(".sidebar-header");
@@ -874,7 +1288,7 @@ function setupSidebarInteractions() {
   });
 }
 
-// Update Active Step (unchanged)
+// Update Active Step
 function updateActiveStep(step) {
   sidebarItems.forEach((item) => {
     item.classList.remove("active");
@@ -896,9 +1310,9 @@ function updateActiveStep(step) {
   activeSidebarSection = steps[step];
 }
 
-// Cell Painting Functionality
+// Cell Painting Functionality (Only for Colors)
 canvas.addEventListener("click", (e) => {
-  if (activeSidebarSection !== "colors") return; // Only paint in colors section
+  if (activeSidebarSection !== "colors") return; // Tiles are applied automatically, not via click
 
   const rect = canvas.getBoundingClientRect();
   const clickX = e.clientX - rect.left;
@@ -910,20 +1324,25 @@ canvas.addEventListener("click", (e) => {
   const cellX = Math.floor(clickX / cellSize) * cellSize;
   const cellY = Math.floor(clickY / cellSize) * cellSize;
 
-  // Check for existing cell
   const existingCellIndex = paintedCells.findIndex(
     (cell) => cell.x === cellX && cell.y === cellY
   );
+  let cell;
   if (existingCellIndex !== -1) {
-    paintedCells[existingCellIndex].color = paintColor;
+    cell = paintedCells[existingCellIndex];
   } else {
-    paintedCells.push({ x: cellX, y: cellY, color: paintColor });
+    cell = { x: cellX, y: cellY, tileId: designShape.currentTileId }; // Include tile by default
+    paintedCells.push(cell);
+  }
+
+  if (activeSidebarSection === "colors") {
+    cell.color = paintColor; // Apply color, keep tile
   }
 
   redrawCanvas();
 });
 
-// Handle Reshape Functionality (unchanged)
+// Handle Reshape Functionality
 canvasContainer.addEventListener("mousedown", (e) => {
   if (activeSidebarSection !== "layouts") return;
   if (e.target.classList.contains("reshape-handle")) {
@@ -1026,10 +1445,14 @@ document.addEventListener("mousemove", (e) => {
 });
 
 document.addEventListener("mouseup", () => {
+  if (activeHandle !== null) {
+    applyTilesToShape(); // Reapply tiles after reshaping
+    redrawCanvas();
+  }
   activeHandle = null;
 });
 
-// Navigation Buttons (unchanged)
+// Navigation Buttons
 document.querySelector(".next-btn").addEventListener("click", () => {
   if (currentStep < steps.length - 1) {
     currentStep++;
@@ -1085,22 +1508,9 @@ function resizeCanvas() {
         });
       }
 
-      // Recompute the pattern after resizing
-      if (designShape.pattern) {
-        const activePattern = patterns.find((p) =>
-          document
-            .querySelector(`.pattern-option[data-pattern="${p.id}"]`)
-            ?.classList.contains("active")
-        );
-        if (activePattern) {
-          createSVGPattern(activePattern.image, cellSize).then((pattern) => {
-            designShape.pattern = pattern;
-            redrawCanvas();
-          });
-        }
-      }
+      applyTilesToShape(); // Reapply tiles after resize
     } else {
-      designShape.vertices = getInitialVertices(designShape.type);
+      designShape.vertices = getInitialAreas(designShape.type)[0].vertices;
     }
 
     createHandles();
@@ -1113,15 +1523,24 @@ window.addEventListener("resize", resizeCanvas);
 
 // Initialize Application
 function init() {
+  // Preload tile images
+  tileTypes.forEach((tile) => {
+    const img = new Image();
+    img.src = tile.image;
+    tileImages[tile.id] = img;
+  });
+
   const areas = getInitialAreas("rectangle");
   if (areas.length > 0 && areas[0].vertices) {
     designShape.vertices = [...areas[0].vertices];
     designShape.areas = areas;
   }
+  applyTilesToShape(); // Apply tiles on initial load
   generateLayoutOptions();
   generatePatternOptions();
   generateTileTypeOptions();
   generateColorSwatches();
+  generateEdgeColorOptions();
   setupSidebarInteractions();
   updateActiveStep(currentStep);
   createHandles();
@@ -1131,3 +1550,5 @@ function init() {
 }
 
 init();
+
+// window.addEventListener("load", init);
