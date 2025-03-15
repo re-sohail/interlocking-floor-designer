@@ -11,11 +11,16 @@ const dimensionsDisplay = document.getElementById("dimensions");
 const sidebarItems = document.querySelectorAll(".sidebar-item");
 
 // Settings
-const cellSize = 25; // Fixed cell size
+// Settings
+const pixelsPerFoot = 25; // Reduced from 35 to 25 for a smaller visual size
+const tileWidthInches = 15.75; // Physical tile width
+const tileWidthFt = tileWidthInches / 12; // Convert to feet: 1.3125 ft
+const cellSize = tileWidthFt * pixelsPerFoot; // ≈32.8125 pixels, matches tile size
+
+// Rest of your existing settings remain unchanged
 const fillOpacity = 0.8;
-const tileOpacity = 0.4; // Default tile opacity
-const patternOpacity = 0.4; // Low opacity for patterns over tiles
-const pixelsPerFoot = 100;
+const tileOpacity = 0.4;
+const patternOpacity = 0.4;
 
 // State Variables
 let isDragging = false;
@@ -316,10 +321,11 @@ function createPattern6(ctx) {
 
 // Define Initial Areas for Each Shape
 function getInitialAreas(type) {
-  const width = 400;
-  const height = 300;
-  const x = canvas.width / 2 - width / 2;
-  const y = canvas.height / 2 - height / 2;
+  // Use global pixelsPerFoot (now 25)
+  const width = 20 * pixelsPerFoot; // 20 ft * 25 = 500px
+  const height = 15 * pixelsPerFoot; // 15 ft * 25 = 375px
+  const x = (canvas.width - width) / 2; // Center on 800px canvas: (800 - 500) / 2 = 150px
+  const y = (canvas.height - height) / 2; // Center on 600px canvas: (600 - 375) / 2 = 112.5px
 
   switch (type) {
     case "rectangle":
@@ -327,15 +333,11 @@ function getInitialAreas(type) {
         {
           id: "main",
           vertices: [
-            { x: x, y: y },
-            { x: x + width, y: y },
-            { x: x + width, y: y + height },
-            { x: x, y: y + height },
+            { x: x, y: y }, // Top-left: (150, 112.5)
+            { x: x + width, y: y }, // Top-right: (650, 112.5)
+            { x: x + width, y: y + height }, // Bottom-right: (650, 487.5)
+            { x: x, y: y + height }, // Bottom-left: (150, 487.5)
           ],
-          width: width,
-          height: height,
-          x: x,
-          y: y,
           segments: [
             {
               id: "top",
@@ -343,44 +345,44 @@ function getInitialAreas(type) {
               end: 1,
               length: width,
               direction: "horizontal",
-            },
+            }, // 500px
             {
               id: "right",
               start: 1,
               end: 2,
               length: height,
               direction: "vertical",
-            },
+            }, // 375px
             {
               id: "bottom",
               start: 2,
               end: 3,
               length: width,
               direction: "horizontal",
-            },
+            }, // 500px
             {
               id: "left",
               start: 3,
               end: 0,
               length: height,
               direction: "vertical",
-            },
+            }, // 375px
           ],
         },
       ];
     case "l-shape":
-      const legWidth = width / 2;
-      const legHeight = height / 2;
+      const legWidth = width / 2; // 500px / 2 = 250px (10 ft)
+      const legHeight = height / 2; // 375px / 2 = 187.5px (7.5 ft)
       return [
         {
           id: "main",
           vertices: [
-            { x: x, y: y },
-            { x: x + width, y: y },
-            { x: x + width, y: y + legHeight },
-            { x: x + legWidth, y: y + legHeight },
-            { x: x + legWidth, y: y + height },
-            { x: x, y: y + height },
+            { x: x, y: y }, // Top-left: (150, 112.5)
+            { x: x + width, y: y }, // Top-right: (650, 112.5)
+            { x: x + width, y: y + legHeight }, // Right-middle: (650, 300)
+            { x: x + legWidth, y: y + legHeight }, // Inner-middle: (400, 300)
+            { x: x + legWidth, y: y + height }, // Inner-bottom: (400, 487.5)
+            { x: x, y: y + height }, // Bottom-left: (150, 487.5)
           ],
           segments: [
             {
@@ -389,59 +391,59 @@ function getInitialAreas(type) {
               end: 1,
               length: width,
               direction: "horizontal",
-            },
+            }, // 500px
             {
               id: "right-top",
               start: 1,
               end: 2,
               length: legHeight,
               direction: "vertical",
-            },
+            }, // 187.5px
             {
               id: "inner-top",
               start: 2,
               end: 3,
               length: width - legWidth,
               direction: "horizontal",
-            },
+            }, // 250px
             {
               id: "inner-left",
               start: 3,
               end: 4,
               length: height - legHeight,
               direction: "vertical",
-            },
+            }, // 187.5px
             {
               id: "bottom",
               start: 4,
               end: 5,
               length: legWidth,
               direction: "horizontal",
-            },
+            }, // 250px
             {
               id: "left",
               start: 5,
               end: 0,
               length: height,
               direction: "vertical",
-            },
+            }, // 375px
           ],
         },
       ];
     case "u-shape":
-      const uLegWidth = width / 4;
+      const uLegWidth = width / 4; // 500px / 4 = 125px (5 ft)
       return [
         {
           id: "main",
           vertices: [
-            { x: x, y: y },
-            { x: x + uLegWidth, y: y },
-            { x: x + uLegWidth, y: y + height / 2 },
-            { x: x + width - uLegWidth, y: y + height / 2 },
-            { x: x + width - uLegWidth, y: y },
-            { x: x + width, y: y },
-            { x: x + width, y: y + height },
-            { x: x, y: y + height },
+            { x: x, y: y }, // Top-left: (150, 112.5)
+            { x: x + uLegWidth, y: y }, // Left-inner-top: (275, 112.5)
+            { x: x + uLegWidth, y: y + height / 2 }, // Left-inner-middle: (275, 300)
+            { x: x + width - uLegWidth, y: y + height / 2 }, // Right-inner-middle: (525, 300)
+            { x: x + width - uLegWidth, y: y }, // Right-inner-top: (525, 112.5)
+            { x: x + width, y: y }, // Top-right: (650, 112.5)
+            { x: x + width, y: y + height }, // Bottom-right: (650, 487.5)
+            { x: x, y: y + height }, // Bottom-left: (150, 487.5)
           ],
           segments: [
             {
@@ -450,74 +452,74 @@ function getInitialAreas(type) {
               end: 1,
               length: uLegWidth,
               direction: "horizontal",
-            },
+            }, // 125px
             {
               id: "inner-left-vertical",
               start: 1,
               end: 2,
               length: height / 2,
               direction: "vertical",
-            },
+            }, // 187.5px
             {
               id: "inner-bottom",
               start: 2,
               end: 3,
               length: width - 2 * uLegWidth,
               direction: "horizontal",
-            },
+            }, // 250px
             {
               id: "inner-right-vertical",
               start: 3,
               end: 4,
               length: height / 2,
               direction: "vertical",
-            },
+            }, // 187.5px
             {
               id: "top-right",
               start: 4,
               end: 5,
               length: uLegWidth,
               direction: "horizontal",
-            },
+            }, // 125px
             {
               id: "right",
               start: 5,
               end: 6,
               length: height,
               direction: "vertical",
-            },
+            }, // 375px
             {
               id: "bottom",
               start: 6,
               end: 7,
               length: width,
               direction: "horizontal",
-            },
+            }, // 500px
             {
               id: "left",
               start: 7,
               end: 0,
               length: height,
               direction: "vertical",
-            },
+            }, // 375px
           ],
         },
       ];
     case "double-legged-rectangle":
-      const dlrLegWidth = width / 4;
-      const dlrLegHeight = height / 4;
+      const dlrLegWidth = width / 4; // 500px / 4 = 125px (5 ft)
+      const dlrLegHeight = height / 4; // 375px / 4 = 93.75px (3.75 ft)
       return [
         {
           id: "main",
           vertices: [
-            { x: x, y: y },
-            { x: x + width, y: y },
-            { x: x + width, y: y + height },
-            { x: x + width - dlrLegWidth, y: y + height },
-            { x: x + width - dlrLegWidth, y: y + height + dlrLegHeight },
-            { x: x + dlrLegWidth, y: y + height + dlrLegHeight },
-            { x: x + dlrLegWidth, y: y + height },
-            { x: x, y: y + height },
+            { x: x, y: y }, // Top-left: (150, 112.5)
+            { x: x + width, y: y }, // Top-right: (650, 112.5)
+            { x: x + width, y: y + height }, // Bottom-right: (650, 487.5)
+            { x: x + width - dlrLegWidth, y: y + height }, // Right-leg-top: (525, 487.5)
+            { x: x + width - dlrLegWidth, y: y + height + dlrLegHeight }, // Right-leg-bottom: (525, 581.25)
+            { x: x + dlrLegWidth, y: y + height + dlrLegHeight }, // Left-leg-bottom: (275, 581.25)
+            { x: x + dlrLegWidth, y: y + height }, // Left-leg-top: (275, 487.5)
+            { x: x, y: y + height }, // Bottom-left: (150, 487.5)
           ],
           segments: [
             {
@@ -526,61 +528,99 @@ function getInitialAreas(type) {
               end: 1,
               length: width,
               direction: "horizontal",
-            },
+            }, // 500px
             {
               id: "right",
               start: 1,
               end: 2,
               length: height,
               direction: "vertical",
-            },
+            }, // 375px
             {
               id: "bottom-right",
               start: 2,
               end: 3,
               length: dlrLegWidth,
               direction: "horizontal",
-            },
+            }, // 125px
             {
               id: "right-extension",
               start: 3,
               end: 4,
               length: dlrLegHeight,
               direction: "vertical",
-            },
+            }, // 93.75px
             {
               id: "bottom-extension",
               start: 4,
               end: 5,
               length: width - 2 * dlrLegWidth,
               direction: "horizontal",
-            },
+            }, // 250px
             {
               id: "left-extension",
               start: 5,
               end: 6,
               length: dlrLegHeight,
               direction: "vertical",
-            },
+            }, // 93.75px
             {
               id: "bottom-left",
               start: 6,
               end: 7,
               length: dlrLegWidth,
               direction: "horizontal",
-            },
+            }, // 125px
             {
               id: "left",
               start: 7,
               end: 0,
               length: height,
               direction: "vertical",
-            },
+            }, // 375px
           ],
         },
       ];
     default:
       return [];
+  }
+}
+
+function getPatternColor(patternName, i, j) {
+  switch (patternName) {
+    case "Pattern 1":
+      return "#CCCCCC";
+    case "Pattern 2":
+      return (i + j) % 2 === 0 ? "black" : "#CCCCCC";
+    case "Pattern 3":
+      const row = i % 12; // Pattern repeats every 12 rows
+      const col = j % 16; // Pattern repeats every 16 columns
+      if (row === 0 || row === 11 || col === 0 || col === 15) return "black";
+      if (row === 1 || row === 10 || col === 1 || col === 14) return "red";
+      return "#CCCCCC";
+    case "Pattern 4":
+      const r4 = i % 12;
+      const c4 = j % 16;
+      if (r4 === 0 || r4 === 11) return "#CCCCCC";
+      if (r4 === 1 || r4 === 10)
+        return c4 === 0 || c4 === 15 ? "#CCCCCC" : "black";
+      return c4 === 0 || c4 === 15 || (c4 !== 1 && c4 !== 14)
+        ? "#CCCCCC"
+        : "black";
+    case "Pattern 5":
+      const r5 = i % 12;
+      const c5 = j % 16;
+      if (r5 === 0 || r5 === 11) return "red";
+      if (r5 === 1 || r5 === 10) return c5 === 0 || c5 === 15 ? "red" : "black";
+      return c5 === 0 || c5 === 15 ? "red" : "black";
+    case "Pattern 6":
+      const r6 = i % 12;
+      const c6 = j % 16;
+      if (r6 === 0 || r6 === 11) return "black";
+      if (r6 === 1 || r6 === 10) return c6 === 0 || c6 === 15 ? "black" : "red";
+      return c6 === 0 || c6 === 15 || (c6 !== 1 && c6 !== 14) ? "black" : "red";
+    default:
+      return "#CCCCCC";
   }
 }
 
@@ -634,6 +674,7 @@ function formatDimension(pixels) {
 
 // Update Dimensions Display
 function updateDimensions() {
+  // Remove existing dimension labels
   document
     .querySelectorAll(".dimension-label")
     .forEach((label) => label.remove());
@@ -641,6 +682,11 @@ function updateDimensions() {
   const mainArea = designShape.areas[0];
   if (!mainArea.segments) return;
 
+  // Calculate scaling factors for display
+  const scaleX = canvas.clientWidth / canvas.width;
+  const scaleY = canvas.clientHeight / canvas.height;
+
+  // Update segment dimensions
   mainArea.segments.forEach((segment) => {
     const startPoint = mainArea.vertices[segment.start];
     const endPoint = mainArea.vertices[segment.end];
@@ -655,34 +701,47 @@ function updateDimensions() {
     dimensionLabel.textContent = dimensionText;
     dimensionLabel.style.position = "absolute";
 
+    // Calculate midpoint of the segment
     const M = {
       x: (startPoint.x + endPoint.x) / 2,
       y: (startPoint.y + endPoint.y) / 2,
     };
+
+    // Calculate direction vector and perpendicular vector
     const D = { x: endPoint.x - startPoint.x, y: endPoint.y - startPoint.y };
-    const N = { x: D.y, y: -D.x };
+    const N = { x: D.y, y: -D.x }; // Perpendicular to the segment
     const magN = Math.sqrt(N.x * N.x + N.y * N.y);
-    if (magN === 0) return;
+    if (magN === 0) return; // Avoid division by zero
+
+    // Normalize the perpendicular vector and offset the label
     const U = { x: N.x / magN, y: N.y / magN };
-    const k = 20;
+    const k = 20; // Initial offset distance in pixels
     const P = { x: M.x + k * U.x, y: M.y + k * U.y };
 
+    // Append label to the canvas container and adjust position based on label size
     canvasContainer.appendChild(dimensionLabel);
     const width = dimensionLabel.offsetWidth;
     const height = dimensionLabel.offsetHeight;
-    const adjustedK = Math.max(k, height / 2 + 5);
+    const adjustedK = Math.max(k, height / 2 + 5); // Ensure label doesn't overlap segment
     const finalP = { x: M.x + adjustedK * U.x, y: M.y + adjustedK * U.y };
 
-    dimensionLabel.style.left = `${finalP.x - width / 2}px`;
-    dimensionLabel.style.top = `${finalP.y - height / 2}px`;
+    // Position the label with scaling, centered at finalP
+    dimensionLabel.style.left = `${finalP.x * scaleX - width / 2}px`;
+    dimensionLabel.style.top = `${finalP.y * scaleY - height / 2}px`;
   });
 
-  const xs = mainArea.vertices.map((v) => v.x);
-  const ys = mainArea.vertices.map((v) => v.y);
-  const width = Math.max(...xs) - Math.min(...xs);
-  const height = Math.max(...ys) - Math.min(...ys);
-  const areaFt = (width * height) / pixelsPerFoot ** 2;
-  dimensionsDisplay.textContent = `Total Area: ${areaFt.toFixed(2)} ft²`;
+  // Calculate total area using the shoelace formula
+  const areaPixels = calculateArea(mainArea.vertices);
+  const areaFt = areaPixels / pixelsPerFoot ** 2;
+
+  // Calculate number of tiles needed with a 10% buffer
+  const tileArea = 1.72; // Square feet per tile
+  const totalAreaWithBuffer = areaFt * 1.1;
+  const tilesNeeded = Math.ceil(totalAreaWithBuffer / tileArea);
+
+  // Update UI elements
+  document.getElementById("totalArea").textContent = areaFt.toFixed(2);
+  document.getElementById("tilesNeeded").textContent = tilesNeeded;
 }
 
 // Update Area Dimensions
@@ -719,8 +778,6 @@ function updateAreaDimensions() {
 function applyTilesToShape() {
   paintedCells.length = 0;
   const path = getShapePath();
-
-  // Calculate bounding box
   const xs = designShape.vertices.map((v) => v.x);
   const ys = designShape.vertices.map((v) => v.y);
   const minX = Math.floor(Math.min(...xs) / cellSize) * cellSize;
@@ -728,25 +785,26 @@ function applyTilesToShape() {
   const minY = Math.floor(Math.min(...ys) / cellSize) * cellSize;
   const maxY = Math.ceil(Math.max(...ys) / cellSize) * cellSize;
 
-  // Check multiple points per cell
+  let j = 0;
   for (let x = minX; x < maxX; x += cellSize) {
+    let i = 0;
     for (let y = minY; y < maxY; y += cellSize) {
       const cellPoints = [
-        { x: x + cellSize / 2, y: y + cellSize / 2 }, // Center
-        { x: x, y: y }, // Top-left
-        { x: x + cellSize, y: y }, // Top-right
-        { x: x, y: y + cellSize }, // Bottom-left
-        { x: x + cellSize, y: y + cellSize }, // Bottom-right
+        { x: x + cellSize / 2, y: y + cellSize / 2 },
+        { x: x, y: y },
+        { x: x + cellSize, y: y },
+        { x: x, y: y + cellSize },
+        { x: x + cellSize, y: y + cellSize },
       ];
-
-      // Check if any point is inside the shape
       const isInside = cellPoints.some((p) =>
         ctx.isPointInPath(path, p.x, p.y)
       );
       if (isInside) {
-        paintedCells.push({ x, y, tileId: designShape.currentTileId });
+        paintedCells.push({ x, y, i, j, tileId: designShape.currentTileId });
       }
+      i++;
     }
+    j++;
   }
 }
 
@@ -785,18 +843,22 @@ function drawPaintedCells() {
   });
 
   // Draw patterns over tiles
-  if (designShape.patternImage) {
+  if (designShape.pattern) {
     ctx.save();
     ctx.globalAlpha = patternOpacity;
+    ctx.clip(path);
+
+    // Calculate current min coordinates of the shape
     const xs = designShape.vertices.map((v) => v.x);
     const ys = designShape.vertices.map((v) => v.y);
     const minX = Math.min(...xs);
-    const maxX = Math.max(...xs);
     const minY = Math.min(...ys);
-    const maxY = Math.max(...ys);
-    const width = maxX - minX;
-    const height = maxY - minY;
-    ctx.drawImage(designShape.patternImage, minX, minY, width, height);
+
+    // Update pattern transform to align with the shape's position
+    designShape.pattern.setTransform(new DOMMatrix().translate(minX, minY));
+
+    ctx.fillStyle = designShape.pattern;
+    ctx.fill(path);
     ctx.restore();
   } else if (designShape.pattern) {
     ctx.save();
@@ -918,71 +980,89 @@ function redrawCanvas() {
 
 // Create and Update Reshape Handles
 function createHandles() {
+  // Remove existing handles
   document
     .querySelectorAll(
       ".resize-handle, .side-handle, .area-handle, .reshape-handle"
     )
     .forEach((handle) => handle.remove());
-  if (designShape.areas && designShape.areas.length > 0) {
-    const mainArea = designShape.areas[0];
-    if (mainArea.vertices) {
-      mainArea.vertices.forEach((vertex, vertexIndex) => {
+
+  if (!designShape.areas || designShape.areas.length === 0) return;
+
+  const mainArea = designShape.areas[0];
+  if (!mainArea.vertices) return;
+
+  // Calculate scaling factors
+  const scaleX = canvas.clientWidth / canvas.width;
+  const scaleY = canvas.clientHeight / canvas.height;
+
+  // Vertex (corner) handles
+  mainArea.vertices.forEach((vertex, vertexIndex) => {
+    const handle = document.createElement("div");
+    handle.className = "reshape-handle corner-handle";
+    handle.setAttribute("data-vertex-index", vertexIndex);
+    // Position in display coordinates
+    handle.style.left = vertex.x * scaleX + "px";
+    handle.style.top = vertex.y * scaleY + "px";
+    canvasContainer.appendChild(handle);
+  });
+
+  // Midpoint (segment) handles
+  if (mainArea.segments) {
+    mainArea.segments.forEach((segment, segmentIndex) => {
+      if (segment.start !== undefined && segment.end !== undefined) {
+        const startPoint = mainArea.vertices[segment.start];
+        const endPoint = mainArea.vertices[segment.end];
+        const midpoint = getMidpoint(startPoint, endPoint);
         const handle = document.createElement("div");
-        handle.className = "reshape-handle corner-handle";
-        handle.setAttribute("data-vertex-index", vertexIndex);
-        handle.style.left = vertex.x + "px";
-        handle.style.top = vertex.y + "px";
+        handle.className = "reshape-handle midpoint-handle";
+        handle.setAttribute("data-segment-index", segmentIndex);
+        // Position in display coordinates
+        handle.style.left = midpoint.x * scaleX + "px";
+        handle.style.top = midpoint.y * scaleY + "px";
         canvasContainer.appendChild(handle);
-      });
-      if (mainArea.segments) {
-        mainArea.segments.forEach((segment, segmentIndex) => {
-          if (segment.start !== undefined && segment.end !== undefined) {
-            const startPoint = mainArea.vertices[segment.start];
-            const endPoint = mainArea.vertices[segment.end];
-            const midpoint = getMidpoint(startPoint, endPoint);
-            const handle = document.createElement("div");
-            handle.className = "reshape-handle midpoint-handle";
-            handle.setAttribute("data-segment-index", segmentIndex);
-            handle.style.left = midpoint.x + "px";
-            handle.style.top = midpoint.y + "px";
-            canvasContainer.appendChild(handle);
-          }
-        });
       }
-    }
+    });
   }
 }
 
 function updateHandles() {
-  if (designShape.areas && designShape.areas.length > 0) {
-    const mainArea = designShape.areas[0];
-    if (mainArea.vertices) {
-      mainArea.vertices.forEach((vertex, vertexIndex) => {
+  if (!designShape.areas || designShape.areas.length === 0) return;
+
+  const mainArea = designShape.areas[0];
+  if (!mainArea.vertices) return;
+
+  // Calculate scaling factors
+  const scaleX = canvas.clientWidth / canvas.width;
+  const scaleY = canvas.clientHeight / canvas.height;
+
+  // Update vertex handles
+  mainArea.vertices.forEach((vertex, vertexIndex) => {
+    const handle = document.querySelector(
+      `.reshape-handle[data-vertex-index="${vertexIndex}"]`
+    );
+    if (handle) {
+      handle.style.left = vertex.x * scaleX + "px";
+      handle.style.top = vertex.y * scaleY + "px";
+    }
+  });
+
+  // Update midpoint handles
+  if (mainArea.segments) {
+    mainArea.segments.forEach((segment, segmentIndex) => {
+      if (segment.start !== undefined && segment.end !== undefined) {
+        const startPoint = mainArea.vertices[segment.start];
+        const endPoint = mainArea.vertices[segment.end];
+        const midpoint = getMidpoint(startPoint, endPoint);
         const handle = document.querySelector(
-          `.reshape-handle[data-vertex-index="${vertexIndex}"]`
+          `.reshape-handle[data-segment-index="${segmentIndex}"]`
         );
         if (handle) {
-          handle.style.left = vertex.x + "px";
-          handle.style.top = vertex.y + "px";
+          handle.style.left = midpoint.x * scaleX + "px";
+          handle.style.top = midpoint.y * scaleY + "px";
         }
-      });
-      if (mainArea.segments) {
-        mainArea.segments.forEach((segment, segmentIndex) => {
-          if (segment.start !== undefined && segment.end !== undefined) {
-            const startPoint = mainArea.vertices[segment.start];
-            const endPoint = mainArea.vertices[segment.end];
-            const midpoint = getMidpoint(startPoint, endPoint);
-            const handle = document.querySelector(
-              `.reshape-handle[data-segment-index="${segmentIndex}"]`
-            );
-            if (handle) {
-              handle.style.left = midpoint.x + "px";
-              handle.style.top = midpoint.y + "px";
-            }
-          }
-        });
       }
-    }
+    });
   }
 }
 
@@ -1029,75 +1109,6 @@ function generateLayoutOptions() {
 }
 
 // Generate Pattern Options
-// function generatePatternOptions() {
-//   const patternGrid = document.getElementById("patternGrid");
-//   patternGrid.innerHTML = "";
-//   patterns.forEach((pattern) => {
-//     const patternOption = document.createElement("div");
-//     patternOption.className = "pattern-option";
-//     patternOption.setAttribute("data-pattern", pattern.id);
-
-//     const patternImage = document.createElement("img");
-//     patternImage.className = "pattern-image";
-//     patternImage.src = pattern.image;
-//     patternImage.alt = pattern.name;
-
-//     const patternLabel = document.createElement("span");
-//     patternLabel.className = "pattern-label";
-//     patternLabel.textContent = pattern.name;
-
-//     patternOption.appendChild(patternImage);
-//     patternOption.appendChild(patternLabel);
-//     patternGrid.appendChild(patternOption);
-
-//     patternOption.addEventListener("click", async () => {
-//       document
-//         .querySelectorAll(".pattern-option")
-//         .forEach((opt) => opt.classList.remove("active"));
-//       patternOption.classList.add("active");
-
-//       if (pattern.name === "Pattern 1") {
-//         designShape.pattern = createPattern1(ctx);
-//         designShape.patternImage = null;
-//         designShape.activePatternName = pattern.name;
-//       } else if (pattern.name === "Pattern 2") {
-//         designShape.pattern = createPattern2(ctx);
-//         designShape.patternImage = null;
-//         designShape.activePatternName = pattern.name;
-//       } else if (pattern.name === "Pattern 3") {
-//         designShape.pattern = createPattern3(ctx);
-//         designShape.patternImage = null;
-//         designShape.activePatternName = pattern.name;
-
-//         const xs = designShape.vertices.map((v) => v.x);
-//         const ys = designShape.vertices.map((v) => v.y);
-//         designShape.initialPatternOffset = {
-//           x: Math.min(...xs),
-//           y: Math.min(...ys),
-//         };
-//       } else if (pattern.name === "Pattern 4") {
-//         designShape.pattern = createPattern4(ctx);
-//         designShape.patternImage = null;
-//         designShape.activePatternName = pattern.name;
-//       } else if (pattern.name === "Pattern 5") {
-//         designShape.pattern = createPattern5(ctx);
-//         designShape.patternImage = null;
-//         designShape.activePatternName = pattern.name;
-//       } else if (pattern.name === "Pattern 6") {
-//         designShape.pattern = createPattern6(ctx);
-//         designShape.patternImage = null;
-//         designShape.activePatternName = pattern.name;
-//       } else {
-//         const img = await loadPatternImage(pattern.image);
-//         designShape.patternImage = img;
-//         designShape.pattern = null;
-//         designShape.activePatternName = pattern.name;
-//       }
-//       redrawCanvas();
-//     });
-//   });
-// }
-
 function generatePatternOptions() {
   const patternGrid = document.getElementById("patternGrid");
   patternGrid.innerHTML = "";
@@ -1151,9 +1162,17 @@ function generatePatternOptions() {
         designShape.activePatternName = pattern.name;
       } else {
         const img = await loadPatternImage(pattern.image);
-        designShape.patternImage = img;
-        designShape.pattern = null;
-        designShape.activePatternName = pattern.name;
+        // Create a repeating pattern from the image
+        designShape.pattern = ctx.createPattern(img, "repeat");
+        designShape.patternImage = null;
+
+        // Align pattern with the shape's position
+        const xs = designShape.vertices.map((v) => v.x);
+        const ys = designShape.vertices.map((v) => v.y);
+        designShape.initialPatternOffset = {
+          x: Math.min(...xs),
+          y: Math.min(...ys),
+        };
       }
 
       // For all non-image patterns, store the initial offset (anchor)
@@ -1312,17 +1331,35 @@ function updateActiveStep(step) {
 
 // Cell Painting Functionality (Only for Colors)
 canvas.addEventListener("click", (e) => {
-  if (activeSidebarSection !== "colors") return; // Tiles are applied automatically, not via click
+  if (activeSidebarSection !== "colors") return;
 
   const rect = canvas.getBoundingClientRect();
-  const clickX = e.clientX - rect.left;
-  const clickY = e.clientY - rect.top;
+  // Calculate scaling factors
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+  // Convert to canvas internal coordinates
+  const clickX = (e.clientX - rect.left) * scaleX;
+  const clickY = (e.clientY - rect.top) * scaleY;
+
   const path = getShapePath();
 
   if (!ctx.isPointInPath(path, clickX, clickY)) return;
 
-  const cellX = Math.floor(clickX / cellSize) * cellSize;
-  const cellY = Math.floor(clickY / cellSize) * cellSize;
+  // Calculate grid origin based on current shape vertices
+  const xs = designShape.vertices.map((v) => v.x);
+  const ys = designShape.vertices.map((v) => v.y);
+  const minX = Math.min(...xs);
+  const minY = Math.min(...ys);
+
+  // Adjust click coordinates to grid origin and calculate cell indices
+  const gridX = clickX - minX;
+  const gridY = clickY - minY;
+  const cellI = Math.floor(gridX / cellSize);
+  const cellJ = Math.floor(gridY / cellSize);
+
+  // Compute cell coordinates relative to the grid's origin
+  const cellX = minX + cellI * cellSize;
+  const cellY = minY + cellJ * cellSize;
 
   const existingCellIndex = paintedCells.findIndex(
     (cell) => cell.x === cellX && cell.y === cellY
@@ -1367,8 +1404,18 @@ canvasContainer.addEventListener("mousedown", (e) => {
 
 document.addEventListener("mousemove", (e) => {
   if (activeHandle === null) return;
-  const dx = e.clientX - startMouseX;
-  const dy = e.clientY - startMouseY;
+
+  // Calculate scaling factors
+  const scaleX = canvas.width / canvas.clientWidth;
+  const scaleY = canvas.height / canvas.clientHeight;
+
+  // Movement in screen coordinates
+  const dxScreen = e.clientX - startMouseX;
+  const dyScreen = e.clientY - startMouseY;
+
+  // Convert to canvas coordinates
+  const dx = dxScreen * scaleX;
+  const dy = dyScreen * scaleY;
 
   if (activeHandle.type === "vertex") {
     const vertexIndex = activeHandle.vertexIndex;
@@ -1404,6 +1451,7 @@ document.addEventListener("mousemove", (e) => {
       const startVertex = mainArea.vertices[segment.start];
       const endVertex = mainArea.vertices[segment.end];
       if (segment.direction === "horizontal") {
+        // Move vertically
         startVertex.y = Math.max(
           0,
           Math.min(
@@ -1419,6 +1467,7 @@ document.addEventListener("mousemove", (e) => {
           )
         );
       } else {
+        // Move horizontally
         startVertex.x = Math.max(
           0,
           Math.min(
@@ -1469,7 +1518,10 @@ document.querySelector(".back-btn").addEventListener("click", () => {
 
 // Resize Canvas for Responsiveness
 function resizeCanvas() {
-  const container = canvasContainer;
+  // Make sure canvasContainer is correctly referenced (or use document.getElementById)
+  const container = document.getElementById("canvasContainer");
+
+  // These values are now defined by the CSS calc() values.
   const containerWidth = container.clientWidth;
   const containerHeight = container.clientHeight;
 
@@ -1520,6 +1572,18 @@ function resizeCanvas() {
 }
 
 window.addEventListener("resize", resizeCanvas);
+
+function calculateArea(vertices) {
+  let area = 0;
+  const n = vertices.length;
+  for (let i = 0; i < n; i++) {
+    const j = (i + 1) % n;
+    area += vertices[i].x * vertices[j].y;
+    area -= vertices[j].x * vertices[i].y;
+  }
+  area = Math.abs(area) / 2;
+  return area; // Area in pixels
+}
 
 // Initialize Application
 function init() {
