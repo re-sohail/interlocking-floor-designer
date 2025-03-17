@@ -220,6 +220,8 @@ body {
   height: calc(100vh - 120px);
   padding: 30px;
   position: relative;
+  display: flex;
+  justify-content: center;
 }
 
 .canvas-container {
