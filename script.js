@@ -730,18 +730,110 @@ function updateDimensions() {
     dimensionLabel.style.top = `${finalP.y * scaleY - height / 2}px`;
   });
 
+  // Without extral 10%
+
+  // // Calculate total area using the shoelace formula
+  // const areaPixels = calculateArea(mainArea.vertices);
+  // const areaFt = areaPixels / pixelsPerFoot ** 2;
+
+  // // Calculate number of tiles needed with a 10% buffer
+  // const tileArea = 1.72; // Square feet per tile
+  // const totalAreaWithBuffer = areaFt * 1.1;
+  // const tilesNeeded = Math.ceil(totalAreaWithBuffer / tileArea);
+
+  // // Price calculations
+  // const pricePerTile = 6.25; // Example price per tile
+  // const totalPrice = tilesNeeded * pricePerTile;
+
+  // // Update UI elements with new price-info structure
+  // const priceExcVat = document.querySelector(".price-exc-vat");
+  // const priceIncVat = document.querySelector(".price-inc-vat");
+  // const pricePerUnit = document.querySelector(".price-per-unit");
+
+  // if (priceExcVat) {
+  //   priceExcVat.textContent = `Total Area: ${areaFt.toFixed(2)} sqft`;
+  // }
+  // if (priceIncVat) {
+  //   priceIncVat.textContent = `Tiles Needed: ${tilesNeeded}`;
+  // }
+  // if (pricePerUnit) {
+  //   pricePerUnit.textContent = `Price Per Tile: £${pricePerTile.toFixed(
+  //     2
+  //   )} | Total: £${totalPrice.toFixed(2)}`;
+  // }
+
+  // // Calculate total area using the shoelace formula
+  // const areaPixels = calculateArea(mainArea.vertices);
+  // const areaFt = areaPixels / pixelsPerFoot ** 2;
+
+  // // Calculate buffer and total area
+  // const bufferPercentage = 10;
+  // const bufferAmount = areaFt * (bufferPercentage / 100);
+  // const totalAreaWithBuffer = areaFt + bufferAmount;
+
+  // // Calculate number of tiles needed
+  // const tileArea = 1.72; // Square feet per tile
+  // const tilesNeeded = Math.ceil(totalAreaWithBuffer / tileArea);
+
+  // // Price calculations
+  // const pricePerTile = 6.25;
+  // const totalPrice = tilesNeeded * pricePerTile;
+
+  // // Update UI elements
+  // const priceExcVat = document.querySelector(".price-exc-vat");
+  // const priceIncVat = document.querySelector(".price-inc-vat");
+  // const pricePerUnit = document.querySelector(".price-per-unit");
+
+  // if (priceExcVat) {
+  //   priceExcVat.innerHTML = `
+  //   Base Area: ${areaFt.toFixed(2)} sqft<br>
+  //   +10% Extra: ${bufferAmount.toFixed(2)} sqft<br>
+  //   <strong>Total Area: ${totalAreaWithBuffer.toFixed(2)} sqft</strong>
+  // `;
+  // }
+
+  // if (priceIncVat) {
+  //   priceIncVat.textContent = `Tiles Required: ${tilesNeeded} (${tileArea} sqft each)`;
+  // }
+
+  // if (pricePerUnit) {
+  //   pricePerUnit.innerHTML = `
+  //   Price per tile: £${pricePerTile.toFixed(2)}<br>
+  //   <strong>Total Price: £${totalPrice.toFixed(2)}</strong>
+  // `;
+  // }
+
   // Calculate total area using the shoelace formula
   const areaPixels = calculateArea(mainArea.vertices);
   const areaFt = areaPixels / pixelsPerFoot ** 2;
 
-  // Calculate number of tiles needed with a 10% buffer
+  // Calculate number of tiles needed without a buffer
   const tileArea = 1.72; // Square feet per tile
-  const totalAreaWithBuffer = areaFt * 1.1;
-  const tilesNeeded = Math.ceil(totalAreaWithBuffer / tileArea);
+  const tilesWithoutBuffer = Math.ceil(areaFt / tileArea);
 
-  // Update UI elements
-  document.getElementById("totalArea").textContent = areaFt.toFixed(2);
-  document.getElementById("tilesNeeded").textContent = tilesNeeded;
+  // Increase tile count by 10% and round up to ensure whole tiles
+  const tilesNeeded = Math.ceil(tilesWithoutBuffer * 1.1);
+
+  // Price calculations
+  const pricePerTile = 6.25; // Example price per tile
+  const totalPrice = tilesNeeded * pricePerTile;
+
+  // Update UI elements with new price-info structure
+  const priceExcVat = document.querySelector(".price-exc-vat");
+  const priceIncVat = document.querySelector(".price-inc-vat");
+  const pricePerUnit = document.querySelector(".price-per-unit");
+
+  if (priceExcVat) {
+    priceExcVat.textContent = `Total Area: ${areaFt.toFixed(2)} sqft`;
+  }
+  if (priceIncVat) {
+    priceIncVat.textContent = `Tiles Needed (incl. 10% extra): ${tilesNeeded}`;
+  }
+  if (pricePerUnit) {
+    pricePerUnit.textContent = `Price Per Tile: £${pricePerTile.toFixed(
+      2
+    )} | Total: £${totalPrice.toFixed(2)}`;
+  }
 }
 
 // Update Area Dimensions
