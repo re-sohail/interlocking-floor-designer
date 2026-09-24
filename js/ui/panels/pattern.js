@@ -1,7 +1,7 @@
 // Step 3 — pattern presets (previews are rendered by the same rule as the floor).
 
 import { el } from "../../utils/dom.js";
-import { PATTERNS } from "../../data/patterns.js";
+import { PATTERN_GROUPS, getPattern } from "../../data/patterns.js";
 import { patternThumb } from "../../render/thumbnails.js";
 import { reactive, section, optionCard } from "./shared.js";
 
@@ -27,23 +27,25 @@ export function mountPatternPanel(container, { store, actions }) {
           : null;
 
       root.append(
-        section(
-          "Pattern",
-          el(
-            "div",
-            { class: "card-grid card-grid-3" },
-            PATTERNS.map((p) =>
-              optionCard({
-                preview: patternThumb(p, d.slots, 76, 50),
-                label: p.name,
-                active: d.patternId === p.id,
-                onClick: () => actions.setPattern(p.id),
-              })
-            )
-          ),
-          "Colours for Main, Accent and Trim are set in the next step."
-        ),
-        textField
+        ...(textField ? [textField] : []),
+        ...PATTERN_GROUPS.map((g, i) =>
+          section(
+            g.name,
+            el(
+              "div",
+              { class: "card-grid card-grid-3" },
+              g.ids.map(getPattern).map((p) =>
+                optionCard({
+                  preview: patternThumb(p, d.slots, 76, 50),
+                  label: p.name,
+                  active: d.patternId === p.id,
+                  onClick: () => actions.setPattern(p.id),
+                })
+              )
+            ),
+            i === 0 ? "Colours for Main, Accent and Trim are set in Colours." : null
+          )
+        )
       );
     }
   );
