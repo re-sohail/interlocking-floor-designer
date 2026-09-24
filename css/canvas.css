@@ -1,0 +1,105 @@
+/* Plan stage, tool dock and inline dimension editor */
+.stage {
+  grid-area: stage;
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
+  background: #eceef1;
+}
+
+#plan {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  touch-action: none;
+  user-select: none;
+}
+
+.tool-dock {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+  padding: 5px;
+  border-radius: 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  box-shadow: var(--shadow);
+}
+
+.tool-dock .icon-btn {
+  width: 40px;
+  height: 40px;
+  font-size: 19px;
+}
+
+.tool-dock .icon-btn.is-active {
+  background: var(--ink);
+  color: #fff;
+}
+
+.stage-hint {
+  position: absolute;
+  top: 14px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(6px);
+  font-size: 12px;
+  color: var(--muted);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.dim-editor {
+  position: absolute;
+  height: 32px;
+  padding: 0 10px;
+  border: 2px solid var(--accent);
+  border-radius: 999px;
+  background: #fff;
+  text-align: center;
+  font-weight: 600;
+  box-shadow: var(--shadow);
+  z-index: 3;
+}
+
+.dim-editor:focus {
+  outline: none;
+}
+
+.dim-editor.is-invalid {
+  border-color: var(--danger);
+  animation: shake 0.25s;
+}
+
+@keyframes shake {
+  25% {
+    transform: translateX(-4px);
+  }
+  75% {
+    transform: translateX(4px);
+  }
+}
+
+@media (max-width: 760px) {
+  .stage-hint {
+    display: none;
+  }
+
+  .tool-dock {
+    bottom: 10px;
+  }
+
+  .tool-dock .icon-btn {
+    width: 36px;
+    height: 36px;
+  }
+}
