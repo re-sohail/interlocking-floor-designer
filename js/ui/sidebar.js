@@ -1,6 +1,6 @@
-// Guided steps: a dark icon rail + one step panel with progress, Back / Next.
+// Canva-style navigation: a light icon rail + one detail panel that can collapse.
 
-import { el, icon, $ } from "../utils/dom.js";
+import { el, icon } from "../utils/dom.js";
 import { mountRoomPanel } from "./panels/room.js";
 import { mountTilesPanel } from "./panels/tiles.js";
 import { mountPatternPanel } from "./panels/pattern.js";
@@ -17,21 +17,25 @@ export const STEPS = [
 
 export function mountSidebar(root, ctx) {
   const { store } = ctx;
+  let collapsed = false;
 
-  const railItems = STEPS.map((step, i) =>
+  const railItems = STEPS.map((step) =>
     el(
       "button",
       {
         type: "button",
         class: "rail-btn",
-        title: `${i + 1}. ${step.title} — ${step.sub}`,
+        title: step.sub,
         "aria-controls": `step-${step.id}`,
-        onclick: () => goTo(step.id),
+        onclick: () => {
+          if (store.ui.step === step.id) setCollapsed(!collapsed);
+          else {
+            setCollapsed(false);
+            goTo(step.id);
+          }
+        },
       },
-      [
-        el("span", { class: "rail-icon" }, [icon(step.icon), el("span", { class: "rail-check" }, icon("check-line"))]),
-        el("span", { class: "rail-label" }, step.title),
-      ]
+      [el("span", { class: "rail-icon" }, icon(step.icon)), el("span", { class: "rail-label" }, step.title)]
     )
   );
 
@@ -41,27 +45,19 @@ export function mountSidebar(root, ctx) {
     return body;
   });
 
-  const eyebrow = el("span", { class: "panel-eyebrow" });
   const title = el("h2", { class: "panel-heading" });
   const sub = el("p", { class: "panel-sub" });
-  const progress = el("span", { class: "progress-fill" });
   const scroller = el("div", { class: "step-scroll" }, bodies);
-
-  const back = el("button", { type: "button", class: "btn btn-ghost", onclick: () => move(-1) }, [icon("arrow-left-line"), "Back"]);
-  const next = el("button", { type: "button", class: "btn btn-primary", onclick: () => move(1) }, ["Next", icon("arrow-right-line")]);
+  const collapseTab = el(
+    "button",
+    { type: "button", class: "collapse-tab", "aria-label": "Hide panel", title: "Hide panel", onclick: () => setCollapsed(!collapsed) },
+    icon("arrow-left-s-line")
+  );
 
   root.append(
-    el("nav", { class: "step-rail", "aria-label": "Steps" }, [el("div", { class: "rail-track" }, railItems)]),
-    el("div", { class: "step-panel" }, [
-      el("header", { class: "panel-head" }, [
-        eyebrow,
-        title,
-        sub,
-        el("span", { class: "progress", "aria-hidden": "true" }, progress),
-      ]),
-      scroller,
-      el("footer", { class: "sidebar-footer" }, [back, next]),
-    ])
+    el("nav", { class: "step-rail", "aria-label": "Design tools" }, railItems),
+    el("div", { class: "step-panel" }, [el("header", { class: "panel-head" }, [title, sub]), scroller]),
+    collapseTab
   );
 
   function goTo(id) {
@@ -69,11 +65,12 @@ export function mountSidebar(root, ctx) {
     store.setUi({ step: id, tool: step.tool, hoverWall: -1, hoverCell: null });
   }
 
-  function move(delta) {
-    const i = STEPS.findIndex((s) => s.id === store.ui.step);
-    const target = STEPS[i + delta];
-    if (target) goTo(target.id);
-    else if (delta > 0) $("#downloadBtn")?.click();
+  function setCollapsed(value) {
+    collapsed = value;
+    document.body.classList.toggle("panel-collapsed", value);
+    collapseTab.setAttribute("aria-label", value ? "Show panel" : "Hide panel");
+    collapseTab.title = value ? "Show panel" : "Hide panel";
+    railItems.forEach((btn) => btn.setAttribute("aria-expanded", String(!value && btn.classList.contains("is-active"))));
   }
 
   let lastStep = null;
@@ -81,20 +78,13 @@ export function mountSidebar(root, ctx) {
     if (ui.step === lastStep) return;
     lastStep = ui.step;
     const i = STEPS.findIndex((s) => s.id === ui.step);
-    const step = STEPS[i];
     railItems.forEach((btn, k) => {
       btn.classList.toggle("is-active", k === i);
-      btn.classList.toggle("is-done", k < i);
-      btn.setAttribute("aria-current", k === i ? "step" : "false");
+      btn.setAttribute("aria-current", k === i ? "page" : "false");
     });
     bodies.forEach((body, k) => body.classList.toggle("is-open", k === i));
-    eyebrow.textContent = `Step ${i + 1} of ${STEPS.length}`;
-    title.textContent = step.title;
-    sub.textContent = step.sub;
-    progress.style.width = `${((i + 1) / STEPS.length) * 100}%`;
-    root.style.setProperty("--rail-progress", String(i / (STEPS.length - 1)));
-    back.disabled = i === 0;
-    next.replaceChildren(...(i === STEPS.length - 1 ? [icon("download-2-line"), "Download design"] : ["Next", icon("arrow-right-line")]));
+    title.textContent = STEPS[i].title;
+    sub.textContent = STEPS[i].sub;
     scroller.scrollTop = 0;
   });
   goTo(store.ui.step);

@@ -13,47 +13,30 @@ export function mountSummary(root, { store }) {
     const q = derive(d);
     const u = d.units;
     const total = Math.max(1, q.tiles.total);
-
-    const pill = (label, value) => el("span", { class: "hero-pill" }, [el("strong", {}, value), el("small", {}, label)]);
-    const stat = (iconName, label, value) =>
-      el("div", { class: "stat" }, [
-        el("span", { class: "stat-icon" }, icon(iconName)),
-        el("strong", { class: "stat-value" }, value),
-        el("span", { class: "stat-label" }, label),
-      ]);
     const row = (label, value) => el("div", { class: "kv" }, [el("span", {}, label), el("strong", {}, value)]);
+    const stat = (label, value) => el("div", { class: "stat" }, [el("strong", {}, value), el("span", {}, label)]);
 
     container.append(
-      el("div", { class: "summary-head" }, [
-        el("h2", {}, "Summary"),
-        el("span", { class: "live-badge" }, [el("span", { class: "live-dot" }), "Live"]),
+      el("h2", { class: "summary-title" }, "Summary"),
+
+      block(null, [
+        el("span", { class: "total-label" }, "Tiles to order"),
+        el("span", { class: "total-value" }, q.tiles.order.toLocaleString()),
+        el("span", { class: "total-sub" }, `${q.tiles.full} full · ${q.tiles.cut} cut · +${d.waste}% waste`),
       ]),
 
-      el("div", { class: "summary-hero" }, [
-        el("span", { class: "hero-label" }, "Tiles to order"),
-        el("span", { class: "hero-value" }, q.tiles.order.toLocaleString()),
-        el("div", { class: "hero-pills" }, [
-          pill("Full", String(q.tiles.full)),
-          pill("Cut", String(q.tiles.cut)),
-          pill("Waste", `+${d.waste}%`),
-        ]),
+      block("Floor", [
+        row("Size", `${formatLength(q.bbox.width, u)} × ${formatLength(q.bbox.height, u)}`),
+        row("Tiled area", formatArea(q.area, u)),
+        row("Perimeter", formatLength(q.perimeter, u)),
       ]),
 
-      card("Floor", "ruler-2-line", [
-        el("div", { class: "stat-grid" }, [
-          stat("drag-move-2-line", "Size", `${formatLength(q.bbox.width, u)} × ${formatLength(q.bbox.height, u)}`),
-          stat("square-line", "Tiled area", formatArea(q.area, u)),
-          stat("shape-line", "Perimeter", formatLength(q.perimeter, u)),
-        ]),
-      ]),
-
-      card("Tiles by colour", "palette-line", [
+      block("Tiles by colour", [
         el(
           "ul",
           { class: "breakdown" },
-          q.tiles.byGroup.map((g) => {
-            const hex = getColor(g.color).hex;
-            return el("li", {}, [
+          q.tiles.byGroup.map((g) =>
+            el("li", {}, [
               tileSwatch(g.surface, g.color, 32),
               el("span", { class: "bd-text" }, [
                 el("span", { class: "bd-line" }, [
@@ -61,28 +44,28 @@ export function mountSummary(root, { store }) {
                   el("span", { class: "bd-qty" }, g.order.toLocaleString()),
                 ]),
                 el("small", {}, `${getSurface(g.surface).name} · ${Math.round((g.count / total) * 100)}%`),
-                el("span", { class: "bd-bar" }, el("span", { style: { width: `${(g.count / total) * 100}%`, background: hex } })),
+                el("span", { class: "bd-bar" }, el("span", { style: { width: `${(g.count / total) * 100}%`, background: getColor(g.color).hex } })),
               ]),
-            ]);
-          })
+            ])
+          )
         ),
       ]),
 
-      card("Edges & corners", "shape-2-line", [
-        el("div", { class: "stat-grid stat-grid-3" }, [
-          stat("arrow-left-right-line", "Loop", String(q.edges.loop)),
-          stat("arrow-up-down-line", "Peg", String(q.edges.peg)),
-          stat("corner-down-right-line", "Corners", String(q.edges.corners.length)),
+      block("Edges & corners", [
+        el("div", { class: "stat-grid" }, [
+          stat("Loop edges", String(q.edges.loop)),
+          stat("Peg edges", String(q.edges.peg)),
+          stat("Corners", String(q.edges.corners.length)),
         ]),
-        el("div", { class: "kv kv-color" }, [
+        el("div", { class: "kv" }, [
           el("span", {}, "Ramp colour"),
           el("strong", {}, [el("span", { class: "color-dot", style: { background: q.edgeHex } }), getColor(q.edgeColorId).name]),
         ]),
       ]),
 
-      card("Tile spec", "layout-grid-line", [
+      block("Tile spec", [
         el("div", { class: "spec-head" }, [
-          surfaceThumb(d.surfaceId, d.slots.A, 52),
+          surfaceThumb(d.surfaceId, d.slots.A, 44),
           el("span", { class: "spec-title" }, [el("strong", {}, q.collection.name), el("small", {}, getSurface(d.surfaceId).name)]),
         ]),
         row("Size", formatTileSize(q.size.pitchMm)),
@@ -94,9 +77,6 @@ export function mountSummary(root, { store }) {
   });
 }
 
-function card(title, iconName, children) {
-  return el("section", { class: "summary-card" }, [
-    el("h3", { class: "card-title" }, [icon(iconName), title]),
-    ...children,
-  ]);
+function block(title, children) {
+  return el("section", { class: "summary-block" }, [title ? el("h3", { class: "block-title" }, title) : null, ...children]);
 }

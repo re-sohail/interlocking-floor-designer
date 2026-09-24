@@ -14,7 +14,7 @@ const THEME = {
   outline: "rgba(17, 18, 20, 0.6)",
   wall: "#3f434a",
   dim: "#5b6270",
-  accent: "#b08a57",
+  accent: "#8b3dff",
   obstacle: "#d9dce1",
 };
 

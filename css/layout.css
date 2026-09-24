@@ -16,6 +16,11 @@
   min-height: 0;
 }
 
+/* Collapsed detail panel: only the icon rail remains. */
+body.panel-collapsed {
+  --sidebar-w: var(--rail-w);
+}
+
 /* Top bar */
 .topbar {
   grid-area: top;

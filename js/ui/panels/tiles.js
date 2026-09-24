@@ -35,7 +35,6 @@ export function mountTilesPanel(container, { store, actions }) {
                     el("strong", {}, c.name),
                     el("small", {}, c.tagline),
                   ]),
-                  el("span", { class: "collection-mark", "aria-hidden": "true" }, icon(c.id === col.id ? "checkbox-circle-fill" : "arrow-right-s-line")),
                 ]
               )
             )
