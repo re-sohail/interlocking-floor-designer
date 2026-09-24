@@ -1,4 +1,4 @@
-// Guided step accordion with Back / Next.
+// Guided steps: a dark icon rail + one step panel with progress, Back / Next.
 
 import { el, icon, $ } from "../utils/dom.js";
 import { mountRoomPanel } from "./panels/room.js";
@@ -17,32 +17,52 @@ export const STEPS = [
 
 export function mountSidebar(root, ctx) {
   const { store } = ctx;
-  const items = STEPS.map((step, i) => {
-    const body = el("div", { class: "step-body", id: `step-${step.id}`, role: "region" });
-    step.mount(body, ctx);
-    const header = el(
+
+  const railItems = STEPS.map((step, i) =>
+    el(
       "button",
       {
         type: "button",
-        class: "step-header",
+        class: "rail-btn",
+        title: `${i + 1}. ${step.title} — ${step.sub}`,
         "aria-controls": `step-${step.id}`,
         onclick: () => goTo(step.id),
       },
       [
-        el("span", { class: "step-num" }, String(i + 1)),
-        el("span", { class: "step-icon" }, icon(step.icon)),
-        el("span", { class: "step-text" }, [el("strong", {}, step.title), el("small", {}, step.sub)]),
-        el("span", { class: "step-arrow" }, icon("arrow-down-s-line")),
+        el("span", { class: "rail-icon" }, [icon(step.icon), el("span", { class: "rail-check" }, icon("check-line"))]),
+        el("span", { class: "rail-label" }, step.title),
       ]
-    );
-    const item = el("div", { class: "step", dataset: { step: step.id } }, [header, body]);
-    return { step, item, header };
+    )
+  );
+
+  const bodies = STEPS.map((step) => {
+    const body = el("div", { class: "step-body", id: `step-${step.id}`, role: "region", "aria-label": step.title });
+    step.mount(body, ctx);
+    return body;
   });
+
+  const eyebrow = el("span", { class: "panel-eyebrow" });
+  const title = el("h2", { class: "panel-heading" });
+  const sub = el("p", { class: "panel-sub" });
+  const progress = el("span", { class: "progress-fill" });
+  const scroller = el("div", { class: "step-scroll" }, bodies);
 
   const back = el("button", { type: "button", class: "btn btn-ghost", onclick: () => move(-1) }, [icon("arrow-left-line"), "Back"]);
   const next = el("button", { type: "button", class: "btn btn-primary", onclick: () => move(1) }, ["Next", icon("arrow-right-line")]);
 
-  root.append(el("div", { class: "steps" }, items.map((x) => x.item)), el("div", { class: "sidebar-footer" }, [back, next]));
+  root.append(
+    el("nav", { class: "step-rail", "aria-label": "Steps" }, [el("div", { class: "rail-track" }, railItems)]),
+    el("div", { class: "step-panel" }, [
+      el("header", { class: "panel-head" }, [
+        eyebrow,
+        title,
+        sub,
+        el("span", { class: "progress", "aria-hidden": "true" }, progress),
+      ]),
+      scroller,
+      el("footer", { class: "sidebar-footer" }, [back, next]),
+    ])
+  );
 
   function goTo(id) {
     const step = STEPS.find((s) => s.id === id);
@@ -61,15 +81,21 @@ export function mountSidebar(root, ctx) {
     if (ui.step === lastStep) return;
     lastStep = ui.step;
     const i = STEPS.findIndex((s) => s.id === ui.step);
-    items.forEach(({ step, item, header }) => {
-      const open = step.id === ui.step;
-      item.classList.toggle("is-open", open);
-      item.classList.toggle("is-done", STEPS.indexOf(step) < i);
-      header.setAttribute("aria-expanded", String(open));
+    const step = STEPS[i];
+    railItems.forEach((btn, k) => {
+      btn.classList.toggle("is-active", k === i);
+      btn.classList.toggle("is-done", k < i);
+      btn.setAttribute("aria-current", k === i ? "step" : "false");
     });
+    bodies.forEach((body, k) => body.classList.toggle("is-open", k === i));
+    eyebrow.textContent = `Step ${i + 1} of ${STEPS.length}`;
+    title.textContent = step.title;
+    sub.textContent = step.sub;
+    progress.style.width = `${((i + 1) / STEPS.length) * 100}%`;
+    root.style.setProperty("--rail-progress", String(i / (STEPS.length - 1)));
     back.disabled = i === 0;
     next.replaceChildren(...(i === STEPS.length - 1 ? [icon("download-2-line"), "Download design"] : ["Next", icon("arrow-right-line")]));
-    items[i]?.item.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    scroller.scrollTop = 0;
   });
   goTo(store.ui.step);
 }

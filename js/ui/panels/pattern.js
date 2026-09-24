@@ -31,10 +31,10 @@ export function mountPatternPanel(container, { store, actions }) {
           "Pattern",
           el(
             "div",
-            { class: "card-grid" },
+            { class: "card-grid card-grid-3" },
             PATTERNS.map((p) =>
               optionCard({
-                preview: patternThumb(p, d.slots),
+                preview: patternThumb(p, d.slots, 76, 50),
                 label: p.name,
                 active: d.patternId === p.id,
                 onClick: () => actions.setPattern(p.id),

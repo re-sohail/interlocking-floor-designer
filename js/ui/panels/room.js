@@ -20,10 +20,10 @@ export function mountRoomPanel(container, { store, actions }) {
         "Room shape",
         el(
           "div",
-          { class: "card-grid" },
+          { class: "card-grid card-grid-3" },
           LAYOUTS.map((l) =>
             optionCard({
-              preview: layoutThumb(l.id),
+              preview: layoutThumb(l.id, 76, 48),
               label: l.name,
               active: d.layoutId === l.id,
               onClick: () => actions.setLayout(l.id),

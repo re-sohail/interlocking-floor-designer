@@ -1,6 +1,6 @@
 // Building blocks shared by the sidebar panels.
 
-import { el, clear } from "../../utils/dom.js";
+import { el, clear, icon } from "../../utils/dom.js";
 
 /**
  * Re-render `container` only when `keyOf(design, ui)` changes. Keeps panels cheap during
@@ -33,6 +33,7 @@ export function optionCard({ preview, label, sub, active, onClick, title }) {
     "button",
     { class: `option-card${active ? " is-active" : ""}`, type: "button", onclick: onClick, title: title || label, "aria-pressed": String(!!active) },
     [
+      el("span", { class: "card-check", "aria-hidden": "true" }, icon("check-line")),
       preview ? el("span", { class: "option-preview" }, preview) : null,
       el("span", { class: "option-label" }, label),
       sub ? el("span", { class: "option-sub" }, sub) : null,

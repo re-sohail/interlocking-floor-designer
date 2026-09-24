@@ -1,6 +1,7 @@
 // Step 4 — pattern colours, brush colour/surface and painting tools.
 
 import { el, icon } from "../../utils/dom.js";
+import { luminance } from "../../utils/color.js";
 import { COLORS, COLOR_GROUPS, getColor } from "../../data/colors.js";
 import { getPattern, SLOT_LABELS } from "../../data/patterns.js";
 import { SURFACES, getSurface } from "../../data/tiles.js";
@@ -53,7 +54,7 @@ export function mountColorsPanel(container, { store, actions }) {
             COLORS.filter((c) => c.group === g.id).map((c) =>
               el("button", {
                 type: "button",
-                class: `swatch${c.id === currentId ? " is-active" : ""}`,
+                class: `swatch${c.id === currentId ? " is-active" : ""}${luminance(c.hex) > 0.45 ? " is-light" : ""}`,
                 style: { background: c.hex },
                 title: c.name,
                 "aria-label": c.name,

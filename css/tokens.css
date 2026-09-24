@@ -21,9 +21,17 @@
   --shadow: 0 6px 24px rgba(16, 24, 40, 0.1);
   --focus: 0 0 0 3px rgba(176, 138, 87, 0.35);
 
+  --rail: #111317;
+  --rail-2: #1d2026;
+  --rail-ink: #8b919c;
+  --accent-grad: linear-gradient(135deg, #c9a46f 0%, #a57c47 100%);
+  --shadow-card: 0 1px 2px rgba(16, 24, 40, 0.04), 0 2px 8px rgba(16, 24, 40, 0.05);
+  --shadow-lift: 0 4px 14px rgba(16, 24, 40, 0.1);
+
   --topbar-h: 60px;
-  --sidebar-w: 348px;
-  --summary-w: 300px;
+  --rail-w: 76px;
+  --sidebar-w: 408px;
+  --summary-w: 316px;
 
   --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
 }
@@ -38,6 +46,17 @@ html,
 body {
   height: 100%;
   margin: 0;
+  overflow: hidden; /* the app shell never scrolls; only inner panels do */
+  overscroll-behavior: none;
+}
+
+/* Scroll areas scroll by wheel/touch without drawing a scrollbar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 body {

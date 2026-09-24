@@ -1,6 +1,7 @@
 // Step 5 — edge ramps per wall, ramp colour and waste allowance.
 
 import { el } from "../../utils/dom.js";
+import { luminance } from "../../utils/color.js";
 import { getColor } from "../../data/colors.js";
 import { EDGE_COLORS, MATCH_FLOOR } from "../../data/edges.js";
 import { walls } from "../../geometry/polygon.js";
@@ -17,7 +18,7 @@ export function mountEdgesPanel(container, { store, actions }) {
       const swatch = (id, label, hex) =>
         el("button", {
           type: "button",
-          class: `swatch${d.edgeColor === id ? " is-active" : ""}`,
+          class: `swatch${d.edgeColor === id ? " is-active" : ""}${luminance(hex) > 0.45 ? " is-light" : ""}`,
           style: { background: hex },
           title: label,
           "aria-label": label,

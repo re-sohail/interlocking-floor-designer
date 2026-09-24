@@ -8,6 +8,12 @@
     "side stage summary";
   height: 100vh;
   height: 100dvh;
+  overflow: hidden;
+}
+
+.app > * {
+  min-width: 0;
+  min-height: 0;
 }
 
 /* Top bar */

@@ -35,6 +35,7 @@ export function mountTilesPanel(container, { store, actions }) {
                     el("strong", {}, c.name),
                     el("small", {}, c.tagline),
                   ]),
+                  el("span", { class: "collection-mark", "aria-hidden": "true" }, icon(c.id === col.id ? "checkbox-circle-fill" : "arrow-right-s-line")),
                 ]
               )
             )
@@ -48,7 +49,7 @@ export function mountTilesPanel(container, { store, actions }) {
             col.surfaces.map((id) => {
               const s = getSurface(id);
               return optionCard({
-                preview: surfaceThumb(id, d.slots.A, 72),
+                preview: surfaceThumb(id, d.slots.A, 60),
                 label: s.name,
                 sub: s.note,
                 active: d.surfaceId === id,
