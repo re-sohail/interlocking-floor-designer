@@ -1,0 +1,101 @@
+/* Design tokens */
+:root {
+  /* Canva-like neutrals */
+  --bg: #eceef1;
+  --surface: #ffffff;
+  --surface-2: #f7f8fa;
+  --tile: #f2f3f5;
+  --hover: #e9eaee;
+  --ink: #0d1216;
+  --ink-2: #3c4250;
+  --muted: #6b7280;
+  --line: #e6e7ea;
+  --line-strong: #d8dbe0;
+
+  /* One accent: Canva purple */
+  --accent: #8b3dff;
+  --accent-strong: #7222e0;
+  --accent-soft: #f3ecff;
+  --danger: #d9304f;
+
+  --radius-sm: 6px;
+  --radius: 8px;
+  --radius-lg: 12px;
+  --shadow-sm: 0 1px 2px rgba(13, 18, 22, 0.06);
+  --shadow: 0 4px 16px rgba(13, 18, 22, 0.12);
+  --focus: 0 0 0 2px rgba(139, 61, 255, 0.35);
+
+  --topbar-h: 60px;
+  --rail-w: 72px;
+  --panel-w: 340px;
+  --sidebar-w: calc(var(--rail-w) + var(--panel-w));
+  --summary-w: 300px;
+
+  --font: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  overflow: hidden; /* the app shell never scrolls; only inner panels do */
+  overscroll-behavior: none;
+}
+
+/* Scroll areas scroll by wheel/touch without drawing a scrollbar. */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  font-family: var(--font);
+  font-size: 14px;
+  line-height: 1.4;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--focus);
+}
+
+h3 {
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+body.is-busy,
+body.is-busy * {
+  cursor: progress !important;
+}
