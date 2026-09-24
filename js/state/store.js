@@ -23,7 +23,7 @@ export function createDefaultDesign() {
     surfaceId: "vented",
     sizeId: "400x19",
     patternId: "checker-border",
-    slots: { A: "slate-grey", B: "pearl-grey", C: "jet-black" },
+    slots: { A: "arctic-white", B: "jet-black", C: "racing-red", D: "citrus-yellow" },
     text: "GARAGE",
     overrides: {},
     edgeColor: "jet-black",
@@ -45,7 +45,8 @@ function load() {
     if (!raw) return null;
     const data = JSON.parse(raw);
     if (data?.version !== 1 || !Array.isArray(data.room) || !isValidRoom(data.room)) return null;
-    return { ...createDefaultDesign(), ...data };
+    const base = createDefaultDesign();
+    return { ...base, ...data, slots: { ...base.slots, ...data.slots } };
   } catch {
     return null;
   }
@@ -70,7 +71,7 @@ export function createStore() {
   let ui = {
     step: "room",
     tool: "select",
-    target: "brush", // which colour the palette edits: "A" | "B" | "C" | "brush"
+    target: "brush", // which colour the palette edits: "A" | "B" | "C" | "D" | "brush"
     brushColor: "racing-red",
     brushSurface: "", // "" = same as floor
     hoverWall: -1,

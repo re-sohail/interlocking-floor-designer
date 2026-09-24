@@ -2,6 +2,7 @@
 
 import { getLayout } from "../data/layouts.js";
 import { getCollection, getSize } from "../data/collections.js";
+import { getPattern } from "../data/patterns.js";
 import { setWallLength as resizeWall } from "../geometry/walls.js";
 import { createObstacle } from "../geometry/obstacles.js";
 import { bbox } from "../geometry/polygon.js";
@@ -76,7 +77,12 @@ export function createActions(store, { onRoomReplaced = () => {} } = {}) {
     },
 
     setPattern(id) {
-      store.update((d) => void (d.patternId = id));
+      // Picking a pattern applies its designed colours; users can recolour afterwards.
+      const { palette } = getPattern(id);
+      store.update((d) => {
+        d.patternId = id;
+        d.slots = { ...d.slots, ...palette };
+      });
     },
 
     setText(text) {

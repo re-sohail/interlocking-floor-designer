@@ -36,14 +36,15 @@ export function mountPatternPanel(container, { store, actions }) {
               { class: "card-grid card-grid-3" },
               g.ids.map(getPattern).map((p) =>
                 optionCard({
-                  preview: patternThumb(p, d.slots, 76, 50),
+                  // Active pattern shows the user's colours; others show their designed palette.
+                  preview: patternThumb(p, d.patternId === p.id ? d.slots : { ...d.slots, ...p.palette }, 76, 50),
                   label: p.name,
                   active: d.patternId === p.id,
                   onClick: () => actions.setPattern(p.id),
                 })
               )
             ),
-            i === 0 ? "Colours for Main, Accent and Trim are set in Colours." : null
+            i === 0 ? "Each pattern comes with its own colours. Change them anytime in Colours." : null
           )
         )
       );
